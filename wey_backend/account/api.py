@@ -18,7 +18,9 @@ def me(request):
         'id': request.user.id,
         'name': request.user.name,
         'email': request.user.email,
-        'avatar': request.user.get_avatar()
+        'friends_count': request.user.friends_count,
+        'posts_count': request.user.posts_count,
+        'get_avatar': request.user.get_avatar()
     })
 
 
@@ -134,19 +136,64 @@ def send_friendship_request(request, pk):
 
 @api_view(['POST'])
 def handle_request(request, pk, status):
+    print("=== HANDLE REQUEST CALLED ===", flush=True)
     user = User.objects.get(pk=pk)
     friendship_request = FriendshipRequest.objects.filter(created_for=request.user).get(created_by=user)
     friendship_request.status = status
     friendship_request.save()
 
-    user.friends.add(request.user)
-    user.friends_count = user.friends_count + 1
+    # Add friend (ManyToMany 'self' is symmetrical, so only add once)
+    request.user.friends.add(user)
+    
+    # Count actual friends and update counts
+    request.user.friends_count = request.user.friends.count()
+    request.user.save()
+    
+    user.refresh_from_db()
+    user.friends_count = user.friends.count()
     user.save()
-
-    request_user = request.user
-    request_user.friends_count = request_user.friends_count + 1
-    request_user.save()
 
     notification = create_notification(request, 'accepted_friendrequest', friendrequest_id=friendship_request.id)
 
     return JsonResponse({'message': 'friendship request updated'})
+
+
+@api_view(['POST'])
+def remove_friend(request, pk):
+    import sys
+    print("=== REMOVING FRIEND START ===", flush=True)
+    sys.stdout.flush()
+    user = User.objects.get(pk=pk)
+    
+    # Check if they are friends
+    print(f"Current user: {request.user.name}", flush=True)
+    print(f"Target user: {user.name}", flush=True)
+    print(f"Friends list: {[f.name for f in request.user.friends.all()]}", flush=True)
+    sys.stdout.flush()
+    
+    if user in request.user.friends.all():
+        print(f"=== {user.name} IS A FRIEND! Removing... ===", flush=True)
+        sys.stdout.flush()
+        # Remove from each other's friends list (ManyToMany handles both sides)
+        request.user.friends.remove(user)
+        
+        # Count actual friends and update counts
+        request.user.friends_count = request.user.friends.count()
+        request.user.save()
+        
+        user.refresh_from_db()
+        user.friends_count = user.friends.count()
+        user.save()
+        
+        print(f"After removal - {request.user.name} has {request.user.friends_count} friends", flush=True)
+        print(f"After removal - {user.name} has {user.friends_count} friends", flush=True)
+        
+        # Delete the friendship requests between them
+        FriendshipRequest.objects.filter(created_for=request.user, created_by=user).delete()
+        FriendshipRequest.objects.filter(created_for=user, created_by=request.user).delete()
+        
+        print("=== REMOVAL COMPLETE ===", flush=True)
+        return JsonResponse({'message': 'friend removed'})
+    else:
+        print(f"=== NOT FRIENDS - {user.name} not in {request.user.name}'s friends ===", flush=True)
+        return JsonResponse({'message': 'not friends'}, status=400)

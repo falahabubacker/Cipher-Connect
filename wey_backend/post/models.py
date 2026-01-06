@@ -28,7 +28,8 @@ class Comment(models.Model):
 
 class PostAttachment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    image = models.ImageField(upload_to='post_attachments')
+    image = models.FileField(upload_to='post_attachments')
+    content_type = models.CharField(max_length=100, blank=True, null=True)
     created_by = models.ForeignKey(User, related_name='post_attachments', on_delete=models.CASCADE)
 
     def get_image(self):
@@ -36,6 +37,15 @@ class PostAttachment(models.Model):
             return settings.WEBSITE_URL + self.image.url
         else:
             return ''
+    
+    def is_video(self):
+        if self.content_type:
+            return self.content_type.startswith('video/')
+        # Fallback to extension checking
+        if self.image:
+            name = self.image.name.lower()
+            return any(name.endswith(ext) for ext in ['.mp4', '.mov', '.avi', '.m4v', '.webm', '.mkv'])
+        return False
 
 
 class Post(models.Model):

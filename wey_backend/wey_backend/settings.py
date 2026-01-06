@@ -14,9 +14,9 @@ SECRET_KEY = 'django-insecure-v*=4ctfyl&pe37%c8rs7oa4hoj3h_4w--q9nxw1j=ebd%91865
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
-WEBSITE_URL = 'http://127.0.0.1:8000'
+WEBSITE_URL = 'http://192.168.1.14:8000'  # Use your computer's IP instead of localhost
 
 
 # Application definition
@@ -42,10 +42,18 @@ REST_FRAMEWORK = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:8081",  # Expo web dev server
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True  # For development only
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:8081",  # Expo web dev server
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
 
 INSTALLED_APPS = [
@@ -63,7 +71,14 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+    'drf_spectacular',
 ]
+
+REST_FRAMEWORK["DEFAULT_SCHEMA_CLASS"] = "drf_spectacular.openapi.AutoSchema"
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Wey API",
+    "VERSION": "1.0.0",
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

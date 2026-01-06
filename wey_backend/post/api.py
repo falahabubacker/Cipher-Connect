@@ -8,23 +8,21 @@ from account.serializers import UserSerializer
 from notification.utils import create_notification
 
 from .forms import PostForm, AttachmentForm
-from .models import Post, Like, Comment, Trend
+from .models import Post, Like, Comment, Trend, PostAttachment
 from .serializers import PostSerializer, PostDetailSerializer, CommentSerializer, TrendSerializer
 
 
 @api_view(['GET'])
 def post_list(request):
-    user_ids = [request.user.id]
-
-    for user in request.user.friends.all():
-        user_ids.append(user.id)
-
-    posts = Post.objects.filter(created_by_id__in=list(user_ids))
+    # Show all public posts + user's own private posts
+    posts = Post.objects.filter(is_private=False) | Post.objects.filter(created_by=request.user)
 
     trend = request.GET.get('trend', '')
 
     if trend:
-        posts = posts.filter(body__icontains='#' + trend).filter(is_private=False)
+        posts = posts.filter(body__icontains='#' + trend)
+    
+    posts = posts.order_by('-created_at')
 
     serializer = PostSerializer(posts, many=True)
 
@@ -77,20 +75,23 @@ def post_list_profile(request, id):
 @api_view(['POST'])
 def post_create(request):
     form = PostForm(request.POST)
-    attachment = None
-    attachment_form = AttachmentForm(request.POST, request.FILES)
-
-    if attachment_form.is_valid():
-        attachment = attachment_form.save(commit=False)
-        attachment.created_by = request.user
-        attachment.save()
-
+    
     if form.is_valid():
         post = form.save(commit=False)
         post.created_by = request.user
         post.save()
 
-        if attachment:
+        # Handle multiple image uploads
+        files = request.FILES.getlist('image')
+        
+        for file in files:
+            # Get content type from uploaded file
+            content_type = file.content_type if hasattr(file, 'content_type') else ''
+            attachment = PostAttachment.objects.create(
+                image=file,
+                content_type=content_type,
+                created_by=request.user
+            )
             post.attachments.add(attachment)
 
         user = request.user

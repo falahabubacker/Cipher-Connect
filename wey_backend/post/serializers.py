@@ -6,9 +6,11 @@ from .models import Post, PostAttachment, Comment, Trend
 
 
 class PostAttachmentSerializer(serializers.ModelSerializer):
+    is_video = serializers.BooleanField(read_only=True)
+    
     class Meta:
         model = PostAttachment
-        fields = ('id', 'get_image',)
+        fields = ('id', 'get_image', 'content_type', 'is_video',)
 
 
 class PostSerializer(serializers.ModelSerializer):

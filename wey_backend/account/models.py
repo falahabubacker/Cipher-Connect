@@ -8,11 +8,15 @@ from django.utils import timezone
 
 
 class CustomUserManager(UserManager):
-    def _create_user(self, name, email, password, **extra_fields):
+    def _create_user(self, name=None, email=None, password=None, **extra_fields):
         if not email:
             raise ValueError("You have not provided a valid e-mail address")
-        
+
+        # ensure email normalized and name is never passed as None (which would
+        # result in a NULL value for a non-nullable CharField in the DB)
         email = self.normalize_email(email)
+        name = name or ''
+
         user = self.model(email=email, name=name, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -53,7 +57,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     EMAIL_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    # require 'name' when creating superusers so the management command will
+    # prompt for it instead of leaving it None and causing a DB NOT NULL error
+    REQUIRED_FIELDS = ['name']
 
     def get_avatar(self):
         if self.avatar:
