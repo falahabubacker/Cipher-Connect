@@ -18,6 +18,7 @@ import { usePost, useLikePost, useCommentPost } from '../hooks/usePosts';
 import { useSendFriendRequest, useFriends, useRemoveFriend } from '../hooks/useFriends';
 import { useMe } from '../hooks/useAuth';
 import PostCard from '../components/PostCard';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -96,9 +97,9 @@ export default function PostDetailScreen({ route, navigation }: PostDetailScreen
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior='padding'
       style={styles.container}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 90}
     >
       <ScrollView style={styles.scrollView}>
         {/* Post Card */}

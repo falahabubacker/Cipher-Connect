@@ -14,6 +14,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import VideoPlayer from '../components/VideoPlayer';
 import { useCreatePost } from '../hooks/usePosts';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CreatePostScreen({ navigation }: any) {
   const [postBody, setPostBody] = useState('');
@@ -102,7 +103,7 @@ export default function CreatePostScreen({ navigation }: any) {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <TextInput
           style={styles.input}
@@ -180,7 +181,7 @@ export default function CreatePostScreen({ navigation }: any) {
           )}
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

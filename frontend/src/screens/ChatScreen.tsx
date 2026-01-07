@@ -102,12 +102,13 @@ export default function ChatScreen({ route, navigation }: ChatScreenProps) {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior='padding'
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 90}
     >
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.container}>
       {/* Messages List */}
       <FlatList
         ref={flatListRef}
@@ -196,8 +197,9 @@ export default function ChatScreen({ route, navigation }: ChatScreenProps) {
           )}
         </TouchableOpacity>
       </View>
+        </View>
+      </SafeAreaView>
     </KeyboardAvoidingView>
-    </SafeAreaView>
   );
 }
 

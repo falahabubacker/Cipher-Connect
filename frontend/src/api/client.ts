@@ -22,7 +22,7 @@ const getBaseURL = () => {
     
     // Fallback for Android when debugger host not available
     if (Platform.OS === 'android') {
-      return 'http://192.168.1.14:8000'; // Update to your computer's IP
+      return 'http://10.150.165.83:8000'; // Update to your computer's IP
     }
     
     return 'http://localhost:8000';

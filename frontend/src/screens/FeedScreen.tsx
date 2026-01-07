@@ -18,6 +18,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { usePosts, useLikePost } from '../hooks/usePosts';
 import { useSendFriendRequest, useFriends, useRemoveFriend } from '../hooks/useFriends';
 import { useMe } from '../hooks/useAuth';
+import { useGetOrCreateConversation } from '../hooks/useChat';
 import PostCard from '../components/PostCard';
 import LightBulbIcon from '../components/icons/LightBulbIcon';
 import NotificationIcon from '../components/icons/NotificationIcon';
@@ -30,6 +31,7 @@ export default function FeedScreen({ navigation }: any) {
   const likeMutation = useLikePost();
   const sendFriendRequestMutation = useSendFriendRequest();
   const removeFriendMutation = useRemoveFriend();
+  const getOrCreateConversationMutation = useGetOrCreateConversation();
   const { data: currentUser } = useMe();
   const { data: friendsData, refetch: refetchFriends } = useFriends(currentUser?.id || '');
   const [fullScreenImage, setFullScreenImage] = useState<{ images: any[], index: number } | null>(null);
@@ -37,7 +39,7 @@ export default function FeedScreen({ navigation }: any) {
   const [visiblePosts, setVisiblePosts] = useState<Set<string>>(new Set());
 
   const handleViewableItemsChanged = React.useRef(({ viewableItems }: any) => {
-    const visibleIds = new Set(viewableItems.map((item: any) => item.item.id));
+    const visibleIds = new Set<string>(viewableItems.map((item: any) => item.item.id));
     setVisiblePosts(visibleIds);
   });
 
@@ -59,6 +61,14 @@ export default function FeedScreen({ navigation }: any) {
 
   const handleDisconnect = (userId: string) => {
     removeFriendMutation.mutate(userId);
+  };
+
+  const handleHandshake = (userId: string) => {
+    getOrCreateConversationMutation.mutate(userId, {
+      onSuccess: (conversation) => {
+        navigation.navigate('Chat', { conversationId: conversation.id });
+      },
+    });
   };
 
   const handleRefresh = () => {
@@ -149,6 +159,11 @@ export default function FeedScreen({ navigation }: any) {
         }
         onViewableItemsChanged={handleViewableItemsChanged.current}
         viewabilityConfig={viewabilityConfig.current}
+        // Performance optimizations
+        initialNumToRender={3}
+        maxToRenderPerBatch={3}
+        windowSize={5}
+        removeClippedSubviews={true}
         renderItem={({ item: post }) => {
           const userId = post.created_by.id;
           const isRequestPending = pendingRequests.has(userId) || pendingRequestIds.has(userId);
@@ -162,6 +177,7 @@ export default function FeedScreen({ navigation }: any) {
               onLike={handleLike}
               onFollow={handleFollow}
               onDisconnect={handleDisconnect}
+              onHandshake={handleHandshake}
               onCommentPress={(postId) => navigation.navigate('PostDetail', { postId })}
               onImagePress={(images, index) => setFullScreenImage({ images, index })}
               onBodyPress={(postId) => navigation.navigate('PostDetail', { postId })}
@@ -342,7 +358,7 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     bottom: 10,
-    left: 20,
+    right: 20,
     width: 64,
     height: 64,
     borderRadius: 32,

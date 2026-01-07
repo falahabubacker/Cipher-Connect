@@ -16,7 +16,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-WEBSITE_URL = 'http://192.168.1.14:8000'  # Use your computer's IP instead of localhost
+WEBSITE_URL = 'http://10.150.165.83:8000'  # Use your computer's IP instead of localhost
 
 
 # Application definition

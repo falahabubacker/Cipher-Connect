@@ -12,7 +12,6 @@ import {
 import VideoPlayer from './VideoPlayer';
 import StockUpIcon from './icons/StockUpIcon';
 import CommentIcon from './icons/CommentIcon';
-import ShareIcon from './icons/ShareIcon';
 import HandshakeIcon from './icons/HandshakeIcon';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -28,6 +27,7 @@ interface PostCardProps {
   onImagePress: (images: any[], index: number) => void;
   onBodyPress?: (postId: string) => void;
   onUserPress?: (userId: string) => void;
+  onHandshake?: (userId: string) => void;
   showFollowButton?: boolean;
   showDeleteButton?: boolean;
   isLiking?: boolean;
@@ -49,6 +49,7 @@ export default function PostCard({
   onImagePress,
   onBodyPress,
   onUserPress,
+  onHandshake,
   showFollowButton = false,
   showDeleteButton = false,
   isLiking = false,
@@ -204,6 +205,8 @@ export default function PostCard({
               
               // Video should play only if it's the active slide
               const isActiveSlide = activeSlide === index;
+              // Only render video player if post is visible - prevents loading videos off-screen
+              const shouldRenderVideo = isVideo && isVisible;
               
               return (
                 <TouchableOpacity
@@ -212,13 +215,19 @@ export default function PostCard({
                   activeOpacity={isVideo ? 1 : 0.9}
                   disabled={isVideo}
                 >
-                  {isVideo ? (
+                  {shouldRenderVideo ? (
                     <VideoPlayer
+                      key={`video-${post.id}-${attachment.id}`}
                       source={attachment.get_image}
                       style={styles.postImage}
-                      isVisible={isActiveSlide && isVisible}
+                      isVisible={isActiveSlide}
                       shouldAutoPlay={true}
                     />
+                  ) : isVideo ? (
+                    // Show placeholder for video when not visible
+                    <View style={[styles.postImage, styles.videoPlaceholder]}>
+                      <Text style={styles.videoPlaceholderText}>▶️</Text>
+                    </View>
                   ) : (
                     <Image
                       source={{ uri: attachment.get_image }}
@@ -277,31 +286,30 @@ export default function PostCard({
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton}>
-            <HandshakeIcon size={20} color="#657786" />
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => onCommentPress(post.id)}
+          >
+            <CommentIcon size={20} color="#657786" />
             <Text style={styles.actionText}>
               {post.comments_count >= 1000 
                 ? `${(post.comments_count / 1000).toFixed(1)}k` 
                 : post.comments_count}
             </Text>
           </TouchableOpacity>
-        </View>
 
-        <View style={styles.rightActions}>
-          <TouchableOpacity style={styles.actionButton}>
-            <ShareIcon size={20} color="#657786" />
-          </TouchableOpacity>
+          {onHandshake && (
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => onHandshake(post.created_by.id)}
+              disabled={post.created_by.id === currentUser?.id}
+            >
+              <HandshakeIcon size={20} color="#657786" />
+              <Text style={styles.actionText}>Chat</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
-      
-      {/* Comment Button */}
-      <TouchableOpacity 
-        style={styles.commentButton}
-        onPress={() => onCommentPress(post.id)}
-      >
-        <CommentIcon size={18} color="#657786" />
-        <Text style={styles.commentButtonText}>Comment</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -478,5 +486,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#657786',
     fontWeight: '500',
+  },
+  videoPlaceholder: {
+    backgroundColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  videoPlaceholderText: {
+    fontSize: 48,
+    color: '#FFFFFF',
   },
 });

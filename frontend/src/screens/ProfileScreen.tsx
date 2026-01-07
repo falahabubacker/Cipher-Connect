@@ -101,6 +101,12 @@ export default function ProfileScreen({ navigation }: any) {
               <Text style={styles.statValue}>{currentUser.friends_count}</Text>
               <Text style={styles.statLabel}>Friends</Text>
             </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>
+                {profileData?.posts?.reduce((sum: number, post: any) => sum + post.likes_count, 0) || 0}
+              </Text>
+              <Text style={styles.statLabel}>Invests</Text>
+            </View>
           </View>
 
           {/* Action Buttons */}

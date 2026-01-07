@@ -64,7 +64,8 @@ export default function SearchScreen({ navigation }: any) {
   const pendingRequestIds = new Set(friendsData?.requests?.map((r: any) => r.created_by.id) || []);
 
   return (
-    <View style={styles.container}>      {/* Header */}
+    <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Search</Text>
       </View>

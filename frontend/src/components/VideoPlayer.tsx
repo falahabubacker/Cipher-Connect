@@ -9,16 +9,21 @@ interface VideoPlayerProps {
   shouldAutoPlay?: boolean;
 }
 
-export default function VideoPlayer({ source, style, isVisible = true, shouldAutoPlay = true }: VideoPlayerProps) {
+function VideoPlayer({ source, style, isVisible = true, shouldAutoPlay = true }: VideoPlayerProps) {
   const [error, setError] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
+  const mountCountRef = React.useRef(0);
 
+  // Increment mount count
   React.useEffect(() => {
-    console.log('VideoPlayer rendering with source:', source);
-    setLoading(true);
-    setError(false);
+    mountCountRef.current++;
+    console.log(`VideoPlayer mounted (count: ${mountCountRef.current}) for:`, source.substring(source.lastIndexOf('/') + 1));
+    return () => {
+      console.log(`VideoPlayer unmounted for:`, source.substring(source.lastIndexOf('/') + 1));
+    };
   }, [source]);
 
+  // Create player only once per source
   const player = useVideoPlayer(source, (player) => {
     player.loop = true;
     player.muted = false;
@@ -28,23 +33,19 @@ export default function VideoPlayer({ source, style, isVisible = true, shouldAut
   React.useEffect(() => {
     if (player && shouldAutoPlay) {
       if (isVisible) {
-        console.log('Video visible, playing:', source);
         player.play();
       } else {
-        console.log('Video not visible, pausing:', source);
         player.pause();
       }
     }
-  }, [player, isVisible, shouldAutoPlay, source]);
+  }, [player, isVisible, shouldAutoPlay]);
 
   // Listen to player status changes
   React.useEffect(() => {
     if (player) {
       const subscription = player.addListener('statusChange', (status) => {
-        console.log('Video status changed:', status, 'for:', source);
         if (status === 'readyToPlay') {
           setLoading(false);
-          // Auto-play if visible
           if (isVisible && shouldAutoPlay) {
             player.play();
           }
@@ -52,10 +53,9 @@ export default function VideoPlayer({ source, style, isVisible = true, shouldAut
       });
       return () => subscription.remove();
     }
-  }, [player, source, isVisible, shouldAutoPlay]);
+  }, [player, isVisible, shouldAutoPlay]);
 
   if (error) {
-    console.log('VideoPlayer error for source:', source);
     return (
       <View style={[style, styles.errorContainer]}>
         <Text style={styles.errorText}>⚠️</Text>
@@ -77,7 +77,6 @@ export default function VideoPlayer({ source, style, isVisible = true, shouldAut
         contentFit="contain"
         nativeControls
         onPlaybackError={(err) => {
-          console.log('Video playback error:', err, 'for source:', source);
           setError(true);
           setLoading(false);
         }}
@@ -85,6 +84,15 @@ export default function VideoPlayer({ source, style, isVisible = true, shouldAut
     </View>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders
+export default React.memo(VideoPlayer, (prevProps, nextProps) => {
+  return (
+    prevProps.source === nextProps.source &&
+    prevProps.isVisible === nextProps.isVisible &&
+    prevProps.shouldAutoPlay === nextProps.shouldAutoPlay
+  );
+});
 
 const styles = StyleSheet.create({
   errorContainer: {
