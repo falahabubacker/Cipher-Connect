@@ -10,9 +10,9 @@ import {
   Alert,
 } from 'react-native';
 import VideoPlayer from './VideoPlayer';
-import StockUpIcon from './icons/StockUpIcon';
-import CommentIcon from './icons/CommentIcon';
-import HandshakeIcon from './icons/HandshakeIcon';
+import FinanceIcon from '../../assets/icons/finance_mode_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
+import ChatBubbleIcon from '../../assets/icons/chat_bubble_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
+import HandshakeIcon from '../../assets/icons/handshake_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -278,7 +278,11 @@ export default function PostCard({
             onPress={() => onLike(post.id)}
             disabled={isLiking}
           >
-            <StockUpIcon size={20} color="#657786" />
+            <FinanceIcon 
+              width={20} 
+              height={20} 
+              fill={post.likes?.includes(currentUser?.id) ? "#F4C430" : "#657786"} 
+            />
             <Text style={styles.actionText}>
               {post.likes_count >= 1000 
                 ? `${(post.likes_count / 1000).toFixed(1)}k` 
@@ -290,7 +294,7 @@ export default function PostCard({
             style={styles.actionButton}
             onPress={() => onCommentPress(post.id)}
           >
-            <CommentIcon size={20} color="#657786" />
+            <ChatBubbleIcon width={20} height={20} fill="#657786" />
             <Text style={styles.actionText}>
               {post.comments_count >= 1000 
                 ? `${(post.comments_count / 1000).toFixed(1)}k` 
@@ -304,7 +308,7 @@ export default function PostCard({
               onPress={() => onHandshake(post.created_by.id)}
               disabled={post.created_by.id === currentUser?.id}
             >
-              <HandshakeIcon size={20} color="#657786" />
+              <HandshakeIcon width={20} height={20} fill="#657786" />
               <Text style={styles.actionText}>Chat</Text>
             </TouchableOpacity>
           )}
