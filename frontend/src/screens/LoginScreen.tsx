@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { useLogin } from '../hooks/useAuth';
+import Logo from '../../assets/icons/logo_dark_cropped.svg';
 
 interface LoginScreenProps {
   navigation: any;
@@ -32,7 +33,9 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       style={styles.container}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>CIPHER</Text>
+        <View style={styles.logoContainer}>
+          <Logo width={300} height={100} />
+        </View>
         <Text style={styles.subtitle}>Sign in to continue</Text>
 
         <View style={styles.form}>
@@ -103,6 +106,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 24,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
   },
   title: {
     fontSize: 48,

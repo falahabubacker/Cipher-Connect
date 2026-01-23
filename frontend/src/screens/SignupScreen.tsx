@@ -11,6 +11,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useSignup } from '../hooks/useAuth';
+import Logo from '../../assets/icons/logo_dark_cropped.svg';
 
 interface SignupScreenProps {
   navigation: any;
@@ -57,7 +58,9 @@ export default function SignupScreen({ navigation }: SignupScreenProps) {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.content}>
-          <Text style={styles.title}>CIPHER</Text>
+          <View style={styles.logoContainer}>
+            <Logo width={300} height={100} />
+          </View>
           <Text style={styles.subtitle}>Create your account</Text>
 
           <View style={styles.form}>
@@ -173,6 +176,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 24,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
   },
   title: {
     fontSize: 48,

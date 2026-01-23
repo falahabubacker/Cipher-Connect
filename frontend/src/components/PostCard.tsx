@@ -13,6 +13,7 @@ import VideoPlayer from './VideoPlayer';
 import FinanceIcon from '../../assets/icons/finance_mode_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
 import ChatBubbleIcon from '../../assets/icons/chat_bubble_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
 import HandshakeIcon from '../../assets/icons/handshake_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
+import PlayCircleIcon from '../../assets/icons/play_circle_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -226,7 +227,7 @@ export default function PostCard({
                   ) : isVideo ? (
                     // Show placeholder for video when not visible
                     <View style={[styles.postImage, styles.videoPlaceholder]}>
-                      <Text style={styles.videoPlaceholderText}>▶️</Text>
+                      <PlayCircleIcon width={64} height={64} fill="#FFFFFF" />
                     </View>
                   ) : (
                     <Image
@@ -302,14 +303,13 @@ export default function PostCard({
             </Text>
           </TouchableOpacity>
 
-          {onHandshake && (
+          {onHandshake && post.created_by.id !== currentUser?.id && (
             <TouchableOpacity 
               style={styles.actionButton}
               onPress={() => onHandshake(post.created_by.id)}
-              disabled={post.created_by.id === currentUser?.id}
             >
               <HandshakeIcon width={20} height={20} fill="#657786" />
-              <Text style={styles.actionText}>Chat</Text>
+              <Text style={styles.actionText}>Colaborate</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -495,9 +495,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  videoPlaceholderText: {
-    fontSize: 48,
-    color: '#FFFFFF',
   },
 });

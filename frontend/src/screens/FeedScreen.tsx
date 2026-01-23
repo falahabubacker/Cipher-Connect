@@ -20,8 +20,9 @@ import { useSendFriendRequest, useFriends, useRemoveFriend } from '../hooks/useF
 import { useMe } from '../hooks/useAuth';
 import { useGetOrCreateConversation } from '../hooks/useChat';
 import PostCard from '../components/PostCard';
-import LightBulbIcon from '../components/icons/LightBulbIcon';
-import NotificationIcon from '../components/icons/NotificationIcon';
+import LightBulbIcon from '../../assets/icons/emoji_objects_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
+import NotificationIcon from '../../assets/icons/notifications_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
+import Logo from '../../assets/icons/logo_dark_cropped.svg';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -124,9 +125,9 @@ export default function FeedScreen({ navigation }: any) {
           style={styles.notificationButton}
           onPress={() => navigation.navigate('Notifications')}
         >
-          <NotificationIcon size={28} color="#E3E3E3" />
+          <NotificationIcon width={28} height={28} fill="#E3E3E3" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>CIPHER</Text>
+        <Logo width={180} height={64} />
         <TouchableOpacity 
           style={styles.profileButton}
           onPress={() => navigation.navigate('Profile')}
@@ -200,7 +201,7 @@ export default function FeedScreen({ navigation }: any) {
         style={styles.fab}
         onPress={() => navigation.navigate('CreatePost')}
       >
-        <LightBulbIcon size={32} color="#1A2332" />
+        <LightBulbIcon width={32} height={32} fill="#1A2332" />
       </TouchableOpacity>
 
       {/* Full Screen Image Modal */}
@@ -251,8 +252,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 12,
+    paddingTop: 4,
+    paddingBottom: 4,
     backgroundColor: '#1A2332',
   },
   notificationButton: {
