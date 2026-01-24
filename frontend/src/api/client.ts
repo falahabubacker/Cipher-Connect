@@ -3,9 +3,11 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
+const dev = false;
+
 // Update this to your backend URL
 const getBaseURL = () => {
-  if (__DEV__) {
+  if (dev) {
     // Try multiple ways to get the debugger host
     const manifest = Constants.manifest || Constants.manifest2?.extra?.expoClient;
     const expoConfig = Constants.expoConfig;
@@ -22,12 +24,12 @@ const getBaseURL = () => {
     
     // Fallback for Android when debugger host not available
     if (Platform.OS === 'android') {
-      return 'http://192.168.1.100:8000'; // Update to your computer's IP
+      return 'http://192.168.1.101:8000'; // Update to your computer's IP
     }
     
     return 'http://localhost:8000';
   }
-  return 'https://your-production-api.com';
+  return 'https://FalahAbubacker.pythonanywhere.com';
 };
 
 const API_BASE_URL = getBaseURL();
