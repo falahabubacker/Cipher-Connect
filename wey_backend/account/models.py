@@ -22,12 +22,12 @@ class CustomUserManager(UserManager):
         user.save(using=self._db)
 
         return user
-    
+
     def create_user(self, name=None, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
         return self._create_user(name, email, password, **extra_fields)
-    
+
     def create_superuser(self, name=None, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
@@ -39,10 +39,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=255, blank=True, default='')
     avatar = models.ImageField(upload_to='avatars', blank=True, null=True)
-    friends = models.ManyToManyField('self')
+    friends = models.ManyToManyField('self', blank=True)
     friends_count = models.IntegerField(default=0)
 
-    people_you_may_know = models.ManyToManyField('self')
+    people_you_may_know = models.ManyToManyField('self', blank=True)
 
     posts_count = models.IntegerField(default=0)
 
