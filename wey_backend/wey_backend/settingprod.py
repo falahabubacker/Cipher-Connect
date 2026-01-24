@@ -14,9 +14,9 @@ SECRET_KEY = 'django-insecure-v*=4ctfyl&pe37%c8rs7oa4hoj3h_4w--q9nxw1j=ebd%91865
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['api.wey.com']
+ALLOWED_HOSTS = ['FalahAbubacker.pythonanywhere.com']
 
-WEBSITE_URL = 'http://api.wey.com'
+WEBSITE_URL = 'https://FalahAbubacker.pythonanywhere.com'
 
 
 # Application definition
@@ -40,12 +40,10 @@ REST_FRAMEWORK = {
     )
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "http://wey.com",
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://wey.com",
+    "https://FalahAbubacker.pythonanywhere.com",
 ]
 
 INSTALLED_APPS = [
@@ -67,6 +65,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -143,8 +142,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+STORAGES = {
+    # ...
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
