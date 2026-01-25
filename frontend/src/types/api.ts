@@ -107,6 +107,7 @@ export interface FriendsResponse {
   user: User;
   friends: User[];
   requests: FriendshipRequest[];
+  requests_sent: FriendshipRequest[];
 }
 
 export interface ProfilePostsResponse {

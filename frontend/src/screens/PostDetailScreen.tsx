@@ -96,13 +96,15 @@ export default function PostDetailScreen({ route, navigation }: PostDetailScreen
   }
 
   return (
+    <SafeAreaView style={{ flex: 1 }} edges={['left', 'right', 'bottom']}>
     <KeyboardAvoidingView
-      behavior='padding'
+      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
       style={styles.container}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 90}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 110}
     >
       <ScrollView style={styles.scrollView}>
         {/* Post Card */}
+        <View style={{marginVertical: 8 }}>
         <PostCard
           post={post}
           currentUser={currentUser}
@@ -120,7 +122,7 @@ export default function PostDetailScreen({ route, navigation }: PostDetailScreen
           isRequestPending={pendingRequests.has(post.created_by.id) || pendingRequestIds.has(post.created_by.id)}
           isDisconnecting={removeFriendMutation.isPending}
         />
-
+        </View>
         {/* Comments Section */}
         <View style={styles.commentsSection}>
           <Text style={styles.commentsTitle}>Comments</Text>
@@ -213,12 +215,14 @@ export default function PostDetailScreen({ route, navigation }: PostDetailScreen
         </View>
       </Modal>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'space-between',
     backgroundColor: '#f5f5f5',
   },
   center: {
@@ -233,6 +237,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    color: '#e0e0e0',
   },
   postCard: {
     backgroundColor: 'white',

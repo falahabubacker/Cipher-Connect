@@ -136,7 +136,7 @@ export default function PostCard({
         </TouchableOpacity>
         
         {/* Connect Button */}
-        {showFollowButton && currentUser && post.created_by.id !== currentUser.id && onFollow && (
+        {/* {showFollowButton && currentUser && post.created_by.id !== currentUser.id && onFollow && (
           <TouchableOpacity
             style={[
               styles.followButton,
@@ -158,7 +158,7 @@ export default function PostCard({
               {isRequestPending ? 'Pending' : isFollowingUser ? 'Connected' : 'Connect'}
             </Text>
           </TouchableOpacity>
-        )}
+        )} */}
 
         {/* Delete Menu Button */}
         {showDeleteButton && (

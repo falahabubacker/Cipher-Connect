@@ -61,7 +61,7 @@ export default function SearchScreen({ navigation }: any) {
   // Get friend IDs from friends data
   const friendIds = new Set(friendsData?.friends?.map((f: any) => f.id) || []);
   // Get pending request IDs from requests data
-  const pendingRequestIds = new Set(friendsData?.requests?.map((r: any) => r.created_by.id) || []);
+  const pendingRequestIds = new Set(friendsData?.requests_sent?.map((r: any) => r.created_for.id) || []);
 
   return (
     <View style={styles.container}>
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#ffffff',
   },
   searchBar: {
     flexDirection: 'row',
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#ffffda',
     marginBottom: 12,
   },
   userItem: {

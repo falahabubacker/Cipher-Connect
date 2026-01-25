@@ -130,6 +130,7 @@ export default function ProfileScreen({ navigation }: any) {
             <>
               {profileData.posts.map((post, index) => (
                 <React.Fragment key={post.id}>
+                  <View style={{marginVertical: 8 }}>
                   <PostCard
                     post={post}
                     currentUser={currentUser}
@@ -142,6 +143,7 @@ export default function ProfileScreen({ navigation }: any) {
                     isLiking={likeMutation.isPending}
                     isVisible={visiblePosts.has(post.id) && isFocused}
                   />
+                  </View>
                   {index < profileData.posts.length - 1 && (
                     <View style={styles.separator} />
                   )}

@@ -86,7 +86,8 @@ export default function UserProfileScreen({ route, navigation }: UserProfileScre
       ]
     );
   };
-const handleMessage = () => {
+
+  const handleMessage = () => {
     getOrCreateConversationMutation.mutate(userId, {
       onSuccess: (conversation) => {
         navigation.navigate('Chat', {
@@ -110,15 +111,16 @@ const handleMessage = () => {
 
   // Get friend IDs from friends data
   const friendIds = new Set(friendsData?.friends?.map((f: any) => f.id) || []);
-  // Get pending request IDs from requests data
+  // Get pending request IDs from requests data (incoming)
   const pendingRequestIds = new Set(friendsData?.requests?.map((r: any) => r.created_by.id) || []);
+  // Get sent request IDs (outgoing)
+  const sentRequestIds = new Set(friendsData?.requests_sent?.map((r: any) => r.created_for.id) || []);
   
   const isConnected = friendIds.has(userId);
-  const isPending = isRequestPending || pendingRequestIds.has(userId);
+  const isPending = isRequestPending || pendingRequestIds.has(userId) || sentRequestIds.has(userId);
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       <ScrollView style={styles.container}>
         {/* Profile Header */}
         <View style={styles.header}>
@@ -147,6 +149,13 @@ const handleMessage = () => {
               <Text style={styles.statValue}>{user.friends_count}</Text>
               <Text style={styles.statLabel}>Friends</Text>
             </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>
+                {profileData?.posts?.reduce((sum: number, post: any) => sum + post.likes_count, 0) || 0}
+              </Text>
+              <Text style={styles.statLabel}>Investors</Text>
+            </View>
+            
           </View>
 
           {/* Connect Button */}
@@ -201,6 +210,7 @@ const handleMessage = () => {
             <>
               {profileData.posts.map((post, index) => (
                 <React.Fragment key={post.id}>
+                  <View style={{marginVertical: 8 }}>
                   <PostCard
                     post={post}
                     currentUser={currentUser}
@@ -216,6 +226,7 @@ const handleMessage = () => {
                   {index < profileData.posts.length - 1 && (
                     <View style={styles.separator} />
                   )}
+                  </View>
                 </React.Fragment>
               ))}
             </>
@@ -259,8 +270,7 @@ const handleMessage = () => {
           )}
         </View>
       </Modal>
-      </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -272,7 +282,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
   },
   header: {
     alignItems: 'center',

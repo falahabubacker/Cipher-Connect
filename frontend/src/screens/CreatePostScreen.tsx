@@ -123,10 +123,19 @@ export default function CreatePostScreen({ navigation }: any) {
               {selectedMedia.map((media, index) => (
                 <View key={index} style={styles.imageWrapper}>
                   {media.type === 'video' ? (
-                    <VideoPlayer
-                      source={media.uri}
-                      style={styles.imagePreview}
-                    />
+                    // <VideoPlayer
+                    //   source={media.uri}
+                    //   style={styles.imagePreview}
+                    // />
+                    <>
+                      <Image 
+                          source={{ uri: media.uri }} 
+                          style={styles.imagePreview} 
+                      />
+                      <View style={styles.videoOverlay}>
+                        <Text style={styles.playIcon}>▶</Text>
+                      </View>
+                    </>
                   ) : (
                     <Image source={{ uri: media.uri }} style={styles.imagePreview} />
                   )}
@@ -251,6 +260,22 @@ const styles = StyleSheet.create({
   videoLabelText: {
     color: 'white',
     fontSize: 10,
+    fontWeight: 'bold',
+  },
+    videoOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  playIcon: {
+    color: 'white',
+    fontSize: 32,
     fontWeight: 'bold',
   },
   addImageButton: {
