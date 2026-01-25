@@ -15,6 +15,7 @@ CLOUDFLARE_R2_CONFIG_OPTIONS = {
     "endpoint_url": config("CLOUDFLARE_R2_BUCKET_ENDPOINT"),
     "access_key": config("CLOUDFLARE_R2_ACCESS_KEY"),
     "secret_key": config("CLOUDFLARE_R2_SECRET_KEY"),
+    "custom_domain": config("CLOUDFLARE_R2_PUBLIC_URL", default=None),
 }
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
