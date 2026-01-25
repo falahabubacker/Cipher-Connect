@@ -1,5 +1,21 @@
 from datetime import timedelta
 from pathlib import Path
+from decouple import config
+
+try:
+    from decouple import config
+except ImportError:
+    import os
+    config = os.environ.get
+
+CLOUDFLARE_R2_CONFIG_OPTIONS = {
+    "bucket_name": config("CLOUDFLARE_R2_BUCKET"),
+    "default_acl": "public-read",  # or "private"
+    "signature_version": "s3v4",
+    "endpoint_url": config("CLOUDFLARE_R2_BUCKET_ENDPOINT"),
+    "access_key": config("CLOUDFLARE_R2_ACCESS_KEY"),
+    "secret_key": config("CLOUDFLARE_R2_SECRET_KEY"),
+}
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -53,6 +69,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'storages',
     'account',
     'chat',
     'notification',
@@ -143,17 +160,17 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# MEDIA_URL = 'media/'
+# MEDIA_ROOT = BASE_DIR / 'media'
 
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": CLOUDFLARE_R2_CONFIG_OPTIONS,
     },
-    "staticfiles" : {
+    "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    }
-
+    },
 }
 
 # Default primary key field type

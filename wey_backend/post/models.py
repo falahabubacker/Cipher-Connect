@@ -34,7 +34,8 @@ class PostAttachment(models.Model):
 
     def get_image(self):
         if self.image:
-            return settings.WEBSITE_URL + self.image.url
+            # return settings.WEBSITE_URL + self.image.url
+            return self.image.url
         else:
             return ''
     
