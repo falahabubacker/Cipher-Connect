@@ -64,18 +64,26 @@ def signup(request):
 def friends(request, pk):
     user = User.objects.get(pk=pk)
     requests = []
+    requests_sent = []
 
     if user == request.user:
+        # Incoming requests (sent TO you)
         requests = FriendshipRequest.objects.filter(created_for=request.user, status=FriendshipRequest.SENT)
         requests = FriendshipRequestSerializer(requests, many=True)
         requests = requests.data
+
+        # Outgoing requests (sent BY you)
+        requests_sent = FriendshipRequest.objects.filter(created_by=request.user, status=FriendshipRequest.SENT)
+        requests_sent = FriendshipRequestSerializer(requests_sent, many=True)
+        requests_sent = requests_sent.data
 
     friends = user.friends.all()
 
     return JsonResponse({
         'user': UserSerializer(user).data,
         'friends': UserSerializer(friends, many=True).data,
-        'requests': requests
+        'requests': requests,
+        'requests_sent': requests_sent  # ADD THIS LINE
     }, safe=False)
 
 
