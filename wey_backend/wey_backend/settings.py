@@ -1,5 +1,22 @@
 from datetime import timedelta
 from pathlib import Path
+from decouple import config
+
+try:
+    from decouple import config
+except ImportError:
+    import os
+    config = os.environ.get
+
+CLOUDFLARE_R2_CONFIG_OPTIONS = {
+    "bucket_name": config("CLOUDFLARE_R2_BUCKET"),
+    "default_acl": "public-read",  # or "private"
+    "signature_version": "s3v4",
+    "endpoint_url": config("CLOUDFLARE_R2_BUCKET_ENDPOINT"),
+    "access_key": config("CLOUDFLARE_R2_ACCESS_KEY"),
+    "secret_key": config("CLOUDFLARE_R2_SECRET_KEY"),
+    "custom_domain": config("CLOUDFLARE_R2_PUBLIC_URL", default=None),
+}
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,7 +33,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-WEBSITE_URL = 'http://192.168.1.100:8000'  # Use your computer's IP instead of localhost
+WEBSITE_URL = 'http://192.168.1.101:8000'  # Use your computer's IP instead of localhost
 
 
 # Application definition
@@ -63,6 +80,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'storages',
     'account',
     'chat',
     'notification',
@@ -71,7 +89,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    'drf_spectacular',
 ]
 
 REST_FRAMEWORK["DEFAULT_SCHEMA_CLASS"] = "drf_spectacular.openapi.AutoSchema"
@@ -160,11 +177,14 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# MEDIA_URL = 'media/'
+# MEDIA_ROOT = BASE_DIR / 'media'
 
 STORAGES = {
-    # ...
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": CLOUDFLARE_R2_CONFIG_OPTIONS,
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
