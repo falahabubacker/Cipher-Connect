@@ -16,7 +16,7 @@ export interface FriendshipRequest {
 
 export interface PostAttachment {
   id: string;
-  get_image: string;
+  get_url: string;
   content_type?: string;
   is_video?: boolean;
 }
@@ -30,6 +30,12 @@ export interface Post {
   created_by: User;
   created_at_formatted: string;
   attachments?: PostAttachment[];
+}
+
+export interface PresignedUrlResponse {
+  [x: string]: any;
+  put_url: string;
+  key: string;
 }
 
 export interface Comment {

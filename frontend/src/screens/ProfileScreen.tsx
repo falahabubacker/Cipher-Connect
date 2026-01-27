@@ -181,7 +181,7 @@ export default function ProfileScreen({ navigation }: any) {
               {fullScreenImage.images.map((attachment) => (
                 <Image
                   key={attachment.id}
-                  source={{ uri: attachment.get_image }}
+                  source={{ uri: attachment.get_url }}
                   style={styles.fullScreenImage}
                   resizeMode="contain"
                 />

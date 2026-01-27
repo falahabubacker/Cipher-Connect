@@ -261,7 +261,7 @@ export default function UserProfileScreen({ route, navigation }: UserProfileScre
               {fullScreenImage.images.map((attachment) => (
                 <Image
                   key={attachment.id}
-                  source={{ uri: attachment.get_image }}
+                  source={{ uri: attachment.get_url }}
                   style={styles.fullScreenImage}
                   resizeMode="contain"
                 />

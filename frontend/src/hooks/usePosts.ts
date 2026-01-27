@@ -51,6 +51,17 @@ export const useCreatePost = () => {
   });
 };
 
+// Mutation for requesting a presigned upload URL
+export const usePresignedUrl = () => {
+  
+  return useMutation({
+    mutationFn: async ({filename, content_type}: {filename: string, content_type: string}) => {
+      const { data } = await postsApi.getPresignedUrl({ filename, content_type });
+      return data;
+    },
+  });
+}
+
 export const useLikePost = () => {
   const queryClient = useQueryClient();
 
