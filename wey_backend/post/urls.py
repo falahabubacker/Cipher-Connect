@@ -13,4 +13,5 @@ urlpatterns = [
     path('profile/<uuid:id>/', api.post_list_profile, name='post_list_profile'),
     path('create/', api.post_create, name='post_create'),
     path('trends/', api.get_trends, name='get_trends'),
+    path('presign/', api.get_presigned_url, name='get_presigned_url'),
 ]

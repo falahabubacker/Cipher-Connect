@@ -12,4 +12,4 @@ class PostForm(ModelForm):
 class AttachmentForm(ModelForm):
     class Meta:
         model = PostAttachment
-        fields = ('image',)
+        fields = ('url', 'content_type')

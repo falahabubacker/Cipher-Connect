@@ -19,13 +19,13 @@ urlpatterns = [
 
 # Custom video serving with byte-range support for iOS
 # Match video files specifically (case-insensitive)
-# urlpatterns += [
-#     re_path(r'^media/post_attachments/(?P<path>.+\.(mp4|MP4|mov|MOV|m4v|M4V|avi|AVI|webm|WEBM|mkv|MKV))$', 
-#             serve_video, name='serve_video'),
-# ]
+urlpatterns += [
+    re_path(r'^media/post_attachments/(?P<path>.+\.(mp4|MP4|mov|MOV|m4v|M4V|avi|AVI|webm|WEBM|mkv|MKV))$', 
+            serve_video, name='serve_video'),
+]
 
 # Serve other media files (images, avatars) normally
-# urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += [
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

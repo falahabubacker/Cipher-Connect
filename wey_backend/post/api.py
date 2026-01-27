@@ -2,6 +2,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from urllib3 import request
 
 from account.models import User, FriendshipRequest
 from account.serializers import UserSerializer
@@ -10,7 +11,8 @@ from notification.utils import create_notification
 from .forms import PostForm, AttachmentForm
 from .models import Post, Like, Comment, Trend, PostAttachment
 from .serializers import PostSerializer, PostDetailSerializer, CommentSerializer, TrendSerializer
-
+from .helpers import generate_presigned_urls
+import json
 
 @api_view(['GET'])
 def post_list(request):
@@ -75,27 +77,30 @@ def post_list_profile(request, id):
 @api_view(['POST'])
 def post_create(request):
     form = PostForm(request.POST)
-    
     if form.is_valid():
+        print("Form is valid")
         post = form.save(commit=False)
         post.created_by = request.user
         post.save()
 
-        # Handle multiple image uploads
-        files = request.FILES.getlist('image')
-        
-        for file in files:
-            # Get content type from uploaded file
-            content_type = file.content_type if hasattr(file, 'content_type') else ''
-            attachment = PostAttachment.objects.create(
-                image=file,
-                content_type=content_type,
-                created_by=request.user
-            )
-            post.attachments.add(attachment)
+        # Handle multiple attachment URLs from the request (expecting a list of dicts: [{url, content_type}, ...])
+        attachments_data = json.loads(request.POST.get('attachments', '[]'))
+        print("Number of attachment URLs:", len(attachments_data))
+        for att in attachments_data:
+            url = att.get('url')
+            content_type = att.get('content_type', '')
+            if url:
+                print("Creating attachment with url:", url, "and content type:", content_type)
+                attachment = PostAttachment.objects.create(
+                    url=url,
+                    content_type=content_type,
+                    created_by=request.user
+                )
+                post.attachments.add(attachment)
 
+        # Update user's posts_count to reflect the actual number of posts
         user = request.user
-        user.posts_count = user.posts_count + 1
+        user.posts_count = Post.objects.filter(created_by=user).count()
         user.save()
 
         serializer = PostSerializer(post)
@@ -103,7 +108,26 @@ def post_create(request):
         return JsonResponse(serializer.data, safe=False)
     else:
         return JsonResponse({'error': 'add somehting here later!...'})
-    
+
+
+@api_view(['POST'])
+def get_presigned_url(request):
+    # Expecting JSON body: {"filename": ..., "content_type": ...}
+    filename = request.data.get('filename')
+    content_type = request.data.get('content_type')
+    if not filename or not content_type:
+        return JsonResponse({'error': 'filename and content_type are '}, status=400)
+
+    # You can customize the key/path as needed
+    file_key = f"post_attachments/{filename}"
+    put_url = generate_presigned_urls('PUT', content_type, file_key)
+
+    print("Generated presigned PUT URL:", put_url)
+    return JsonResponse({
+        'put_url': put_url,
+        'key': file_key,
+    })
+
 
 @api_view(['POST'])
 def post_like(request, pk):

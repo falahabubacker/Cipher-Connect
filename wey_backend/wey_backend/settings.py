@@ -71,6 +71,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8081",  # Expo web dev server
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "https://*.exp.direct"
 ]
 
 INSTALLED_APPS = [
@@ -177,8 +178,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
-# MEDIA_URL = 'media/'
-# MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 * 1024 * 1024 bytes
+# DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 * 1024 * 1024 bytes
 
 STORAGES = {
     "default": {

@@ -5,7 +5,7 @@ from django.db import models
 from django.utils.timesince import timesince
 
 from account.models import User
-
+import os
 
 class Like(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -28,23 +28,22 @@ class Comment(models.Model):
 
 class PostAttachment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    image = models.FileField(upload_to='post_attachments')
+    url = models.URLField(max_length=500)
     content_type = models.CharField(max_length=100, blank=True, null=True)
     created_by = models.ForeignKey(User, related_name='post_attachments', on_delete=models.CASCADE)
 
-    def get_image(self):
-        if self.image:
-            # return settings.WEBSITE_URL + self.image.url
-            return self.image.url
-        else:
-            return ''
-    
+    def get_url(self):
+        public_access_url = settings.STORAGES["default"]['OPTIONS'].get('custom_domain')
+        return_url = os.path.join("https://", public_access_url, self.url) or ''
+        print("Generated access URL for attachment:", return_url)
+        return return_url
+
     def is_video(self):
         if self.content_type:
             return self.content_type.startswith('video/')
         # Fallback to extension checking
-        if self.image:
-            name = self.image.name.lower()
+        if self.url:
+            name = self.url.lower()
             return any(name.endswith(ext) for ext in ['.mp4', '.mov', '.avi', '.m4v', '.webm', '.mkv'])
         return False
 

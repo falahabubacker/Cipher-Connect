@@ -10,7 +10,7 @@ class PostAttachmentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = PostAttachment
-        fields = ('id', 'get_image', 'content_type', 'is_video',)
+        fields = ('id', 'get_url', 'content_type', 'is_video',)
 
 
 class PostSerializer(serializers.ModelSerializer):
