@@ -39,6 +39,7 @@ def post_detail(request, pk):
         user_ids.append(user.id)
 
     post = Post.objects.filter(Q(created_by_id__in=list(user_ids)) | Q(is_private=False)).get(pk=pk)
+    print(post.likes.filter(created_by=request.user).exists())
 
     return JsonResponse({
         'post': PostDetailSerializer(post).data,
