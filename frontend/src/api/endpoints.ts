@@ -2,6 +2,7 @@ import api from './client';
 import {
   User,
   Post,
+  PresignedUrlResponse,
   PostDetail,
   Comment,
   Conversation,
@@ -60,6 +61,9 @@ export const postsApi = {
     api.post<Post>('/api/posts/create/', data, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+  
+  getPresignedUrl: ({ filename, content_type }: { filename: string; content_type: string }) =>
+    api.post<PresignedUrlResponse>(`/api/posts/presign/`, { filename, content_type }),
 
   like: (id: string) =>
     api.post<MessageResponse>(`/api/posts/${id}/like/`),

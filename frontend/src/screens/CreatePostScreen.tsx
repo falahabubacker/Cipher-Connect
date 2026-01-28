@@ -11,16 +11,18 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import RNBlobUtil from 'react-native-blob-util';
 import * as ImagePicker from 'expo-image-picker';
 import VideoPlayer from '../components/VideoPlayer';
-import { useCreatePost } from '../hooks/usePosts';
+import { useCreatePost, usePresignedUrl } from '../hooks/usePosts';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CreatePostScreen({ navigation }: any) {
   const [postBody, setPostBody] = useState('');
   const [selectedMedia, setSelectedMedia] = useState<any[]>([]);
+  const [submittingData, setSubmittingData] = useState(false);
   const createPostMutation = useCreatePost();
-
+  const presignedUrlMutation = usePresignedUrl();
   const pickMedia = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     
@@ -46,50 +48,85 @@ export default function CreatePostScreen({ navigation }: any) {
     setSelectedMedia(selectedMedia.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = () => {
+  let submitting_data = false;
+  const handleSubmit = async () => {
+    setSubmittingData(true);
     if (!postBody.trim() && selectedMedia.length === 0) {
       Alert.alert('Empty Post', 'Please add some text, images, or videos');
+      setSubmittingData(false);
       return;
     }
 
+    // Prepare attachments array
+    let attachments = [];
+    for (const [index, media] of selectedMedia.entries()) {
+      try {
+        const uri = media.uri;
+        const filename = uri.split('/').pop() || `media_${index}`;
+        const isVideo = media.type === 'video';
+        // Determine the file type
+        const match = /\.(\w+)$/.exec(filename);
+        const extension = match ? match[1].toLowerCase() : (isVideo ? 'mp4' : 'jpg');
+        // Use proper MIME types, especially for iOS videos
+        let type;
+        if (isVideo) {
+          const videoTypes: { [key: string]: string } = {
+            'mov': 'video/quicktime',
+            'mp4': 'video/mp4',
+            'm4v': 'video/mp4',
+            'avi': 'video/x-msvideo',
+            'webm': 'video/webm',
+            'mkv': 'video/x-matroska'
+          };
+          type = videoTypes[extension] || 'video/mp4';
+          console.log(`Uploading video: ${filename}, extension: ${extension}, MIME: ${type}`);
+        } else {
+          type = `image/${extension}`;
+        }
+
+        const { put_url, key } = await presignedUrlMutation.mutateAsync({ filename, content_type: type });
+
+        if (isVideo) {
+          // Use react-native-blob-util for video upload
+          const realPath = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
+          const res = await RNBlobUtil.fetch('PUT', put_url, {
+            'Content-Type': type,
+          }, RNBlobUtil.wrap(realPath));
+          if (res.info().status < 200 || res.info().status >= 300) {
+            Alert.alert('Upload Error', `Upload failed for ${filename} (status: ${res.info().status})`);
+            throw new Error('Upload failed for ' + filename);
+          }
+        } else {
+          // Use fetch/blob for images (for compatibility)
+          const getBlob = async (fileUri: string | URL | Request) => {
+            const resp = await fetch(fileUri);
+            const imageBody = await resp.blob();
+            return imageBody;
+          };
+          const uploadRes = await fetch(put_url, {
+            method: 'PUT',
+            headers: { 'Content-Type': type },
+            body: await getBlob(uri),
+          });
+          if (!uploadRes.ok) {
+            Alert.alert('Upload Error', `Upload failed for ${filename} (status: ${uploadRes.status})`);
+            throw new Error('Upload failed for ' + filename);
+          }
+        }
+
+        attachments.push({ url: key, content_type: type });
+      } catch (err) {
+        console.error('Error uploading media:', err);
+        Alert.alert('Media Upload Error', `Error uploading file: ${media?.uri}\n${err}`);
+        return;
+      }
+    }
+
+    // Use FormData to send the post
     const formData = new FormData();
     formData.append('body', postBody);
     formData.append('is_private', 'false');
-
-    // Add media to FormData
-    selectedMedia.forEach((media, index) => {
-      const uri = media.uri;
-      const filename = uri.split('/').pop() || `media_${index}`;
-      const isVideo = media.type === 'video';
-      
-      // Determine the file type
-      const match = /\.(\w+)$/.exec(filename);
-      const extension = match ? match[1].toLowerCase() : (isVideo ? 'mp4' : 'jpg');
-      
-      // Use proper MIME types, especially for iOS videos
-      let type;
-      if (isVideo) {
-        // Map common video extensions to proper MIME types
-        const videoTypes: { [key: string]: string } = {
-          'mov': 'video/quicktime',
-          'mp4': 'video/mp4',
-          'm4v': 'video/mp4',
-          'avi': 'video/x-msvideo',
-          'webm': 'video/webm',
-          'mkv': 'video/x-matroska'
-        };
-        type = videoTypes[extension] || 'video/mp4';
-        console.log(`Uploading video: ${filename}, extension: ${extension}, MIME: ${type}`);
-      } else {
-        type = `image/${extension}`;
-      }
-
-      formData.append('image', {
-        uri: Platform.OS === 'ios' ? uri.replace('file://', '') : uri,
-        name: filename,
-        type,
-      } as any);
-    });
+    formData.append('attachments', JSON.stringify(attachments));
 
     createPostMutation.mutate(formData, {
       onSuccess: () => {
@@ -99,15 +136,19 @@ export default function CreatePostScreen({ navigation }: any) {
       onError: (error: any) => {
         Alert.alert('Error', error?.message || 'Failed to create post');
       },
+      onSettled: () => {
+        setSubmittingData(false);
+      },
     });
-  };
-
+  }
+  
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
       <ScrollView style={styles.scrollView}>
         <TextInput
           style={styles.input}
           placeholder="What's on your mind?"
+          placeholderTextColor="#b2b1b1"
           value={postBody}
           onChangeText={setPostBody}
           multiline
@@ -178,12 +219,12 @@ export default function CreatePostScreen({ navigation }: any) {
           style={[
             styles.button,
             styles.postButton,
-            createPostMutation.isPending && styles.postButtonDisabled,
+            submittingData && styles.postButtonDisabled,
           ]}
           onPress={handleSubmit}
-          disabled={createPostMutation.isPending}
+          disabled={submittingData}
         >
-          {createPostMutation.isPending ? (
+          {submittingData ? (
             <ActivityIndicator color="white" />
           ) : (
             <Text style={styles.postButtonText}>Post</Text>
@@ -198,9 +239,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    justifyContent: 'flex-start',
   },
   scrollView: {
-    flex: 1,
     padding: 16,
   },
   input: {

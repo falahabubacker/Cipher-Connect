@@ -201,7 +201,7 @@ export default function PostCard({
             {post.attachments.map((attachment: any, index: number) => {
               // Use is_video from backend if available, otherwise check extension
               const isVideo = attachment.is_video ?? (
-                attachment.get_image?.match(/\.(mp4|mov|avi|m4v|webm|mkv)$/i) !== null
+                attachment.get_url?.match(/\.(mp4|mov|avi|m4v|webm|mkv)$/i) !== null
               );
               
               // Video should play only if it's the active slide
@@ -219,7 +219,7 @@ export default function PostCard({
                   {shouldRenderVideo ? (
                     <VideoPlayer
                       key={`video-${post.id}-${attachment.id}`}
-                      source={attachment.get_image}
+                      source={attachment.get_url}
                       style={styles.postImage}
                       isVisible={isActiveSlide}
                       shouldAutoPlay={true}
@@ -230,8 +230,9 @@ export default function PostCard({
                       <PlayCircleIcon width={64} height={64} fill="#FFFFFF" />
                     </View>
                   ) : (
+                    
                     <Image
-                      source={{ uri: attachment.get_image }}
+                      source={{ uri: attachment.get_url }}
                       style={styles.postImage}
                       resizeMode="cover"
                     />

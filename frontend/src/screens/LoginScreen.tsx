@@ -10,7 +10,8 @@ import {
   Platform,
 } from 'react-native';
 import { useLogin } from '../hooks/useAuth';
-import Logo from '../../assets/icons/logo_dark_cropped.svg';
+import { Image } from 'react-native';
+// Replace SVG logo with PNG
 
 interface LoginScreenProps {
   navigation: any;
@@ -34,7 +35,11 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     >
       <View style={styles.content}>
         <View style={styles.logoContainer}>
-          <Logo width={300} height={100} />
+          <Image
+            source={require('../../assets/icons/cipher_connect.png')}
+            style={{ width: 300, height: 100, resizeMode: 'contain' }}
+            accessibilityLabel="App Logo"
+          />
         </View>
         <Text style={styles.subtitle}>Sign in to continue</Text>
 

@@ -17,10 +17,18 @@ function VideoPlayer({ source, style, isVisible = true, shouldAutoPlay = true }:
   // Increment mount count
   React.useEffect(() => {
     mountCountRef.current++;
-    console.log(`VideoPlayer mounted (count: ${mountCountRef.current}) for:`, source.substring(source.lastIndexOf('/') + 1));
-    return () => {
-      console.log(`VideoPlayer unmounted for:`, source.substring(source.lastIndexOf('/') + 1));
-    };
+    if (typeof source === 'string') {
+      const fileName = source.substring(source.lastIndexOf('/') + 1);
+      console.log(`VideoPlayer mounted (count: ${mountCountRef.current}) for:`, fileName);
+      return () => {
+        console.log(`VideoPlayer unmounted for:`, fileName);
+      };
+    } else {
+      console.log(`VideoPlayer mounted (count: ${mountCountRef.current}) for: [no source]`);
+      return () => {
+        console.log(`VideoPlayer unmounted for: [no source]`);
+      };
+    }
   }, [source]);
 
   // Create player only once per source

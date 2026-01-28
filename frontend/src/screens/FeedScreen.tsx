@@ -22,7 +22,7 @@ import { useGetOrCreateConversation } from '../hooks/useChat';
 import PostCard from '../components/PostCard';
 import LightBulbIcon from '../../assets/icons/emoji_objects_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
 import NotificationIcon from '../../assets/icons/notifications_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
-import Logo from '../../assets/icons/logo_dark_cropped.svg';
+// Replace SVG logo with PNG
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -127,7 +127,11 @@ export default function FeedScreen({ navigation }: any) {
         >
           <NotificationIcon width={28} height={28} fill="#E3E3E3" />
         </TouchableOpacity>
-        <Logo width={180} height={64} />
+        <Image
+          source={require('../../assets/icons/cipher_connect.png')}
+          style={{ width: 180, height: 64, resizeMode: 'contain' }}
+          accessibilityLabel="App Logo"
+        />
         <TouchableOpacity 
           style={styles.profileButton}
           onPress={() => navigation.navigate('Profile')}
@@ -229,7 +233,7 @@ export default function FeedScreen({ navigation }: any) {
               {fullScreenImage.images.map((attachment) => (
                 <Image
                   key={attachment.id}
-                  source={{ uri: attachment.get_image }}
+                  source={{ uri: attachment.get_url }}
                   style={styles.fullScreenImage}
                   resizeMode="contain"
                 />
