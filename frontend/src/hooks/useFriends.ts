@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient, UseQueryOptions } from '@tanstac
 import { friendsApi } from '../api/endpoints';
 import { User, FriendsResponse } from '../types/api';
 
+
+
 export const useFriends = (userId: string, options?: Omit<UseQueryOptions<FriendsResponse>, 'queryKey' | 'queryFn'>) => {
   return useQuery({
     queryKey: ['friends', userId],

@@ -14,9 +14,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
-import { useMe } from '../hooks/useAuth';
+import { useMe, useLogout } from '../hooks/useAuth';
 import { useProfilePosts, useLikePost, useDeletePost } from '../hooks/usePosts';
 import PostCard from '../components/PostCard';
+import LogoutIcon from '../../assets/icons/logout_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
+import GraphIcon from '../../assets/icons/graph_3_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -30,6 +32,7 @@ export default function ProfileScreen({ navigation }: any) {
   const [visiblePosts, setVisiblePosts] = useState<Set<string>>(new Set());
   const likeMutation = useLikePost();
   const deletePostMutation = useDeletePost();
+  const logoutMutation = useLogout();
 
   // Track which posts are in viewport
   const handleScroll = React.useCallback((event: any) => {
@@ -76,6 +79,23 @@ export default function ProfileScreen({ navigation }: any) {
       >
         {/* Profile Header */}
         <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.graphButton}
+            onPress={() => navigation.navigate('Graph')}
+          >
+            <GraphIcon width={24} height={24} color="#007AFF" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={() => logoutMutation.mutate()}
+            disabled={logoutMutation.isPending}
+          >
+            {logoutMutation.isPending ? (
+              <ActivityIndicator color="#007AFF" />
+            ) : (
+              <LogoutIcon width={24} height={24} color="#e81717b1" />
+            )}
+          </TouchableOpacity>
           {currentUser.get_avatar ? (
             <Image
               source={{ uri: currentUser.get_avatar }}
@@ -195,6 +215,14 @@ export default function ProfileScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
+  graphButton: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    zIndex: 2,
+    padding: 6,
+    borderRadius: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -210,6 +238,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+  },
+  logoutButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    zIndex: 2,
+    padding: 6,
+    borderRadius: 20,
   },
   avatar: {
     width: 100,

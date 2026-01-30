@@ -158,6 +158,7 @@ export default function PostDetailScreen({ route, navigation }: PostDetailScreen
         <TextInput
           style={styles.commentInput}
           placeholder="Write a comment..."
+          placeholderTextColor="#8E8E93"
           value={commentText}
           onChangeText={setCommentText}
           multiline
@@ -281,7 +282,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   commentsSection: {
-    backgroundColor: 'white',
+    backgroundColor: 'f5f5f5',
     padding: 16,
   },
   commentsTitle: {

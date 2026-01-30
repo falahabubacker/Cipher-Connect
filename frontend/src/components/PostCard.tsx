@@ -283,7 +283,7 @@ export default function PostCard({
             <FinanceIcon 
               width={20} 
               height={20} 
-              fill={post.likes?.includes(currentUser?.id) ? "#F4C430" : "#657786"} 
+              fill={post.i_liked ? "#F4C430" : "#2d2d2a"} 
             />
             <Text style={styles.actionText}>
               {post.likes_count >= 1000 

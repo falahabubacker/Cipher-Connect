@@ -109,6 +109,16 @@ export interface RefreshTokenResponse {
   refresh?: string;
 }
 
+export interface ConnectionEdge {
+  source: User;
+  target: User;
+  weight: number;
+}
+
+export interface Connections {
+  graph: ConnectionEdge[];
+}
+
 export interface FriendsResponse {
   user: User;
   friends: User[];
@@ -133,4 +143,5 @@ export interface MessageResponse {
 
 export interface PostDetailResponse {
   post: PostDetail;
+  i_liked: boolean;
 }

@@ -74,6 +74,7 @@ export default function SearchScreen({ navigation }: any) {
         <TextInput
           style={styles.input}
           placeholder="Search users or posts..."
+          placeholderTextColor="#8E8E93"
           value={query}
           onChangeText={setQuery}
           onSubmitEditing={handleSearch}

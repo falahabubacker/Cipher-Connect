@@ -17,6 +17,7 @@ import {
   RefreshTokenRequest,
   RefreshTokenResponse,
   FriendsResponse,
+  Connections,
   ProfilePostsResponse,
   SearchResponse,
   MessageResponse,
@@ -82,6 +83,9 @@ export const postsApi = {
 export const friendsApi = {
   list: (userId: string) =>
     api.get<FriendsResponse>(`/api/friends/${userId}/`),
+
+  connections: () =>
+    api.get<Connections>('/api/connections/'),
 
   suggestions: () =>
     api.get<User[]>('/api/friends/suggested/'),

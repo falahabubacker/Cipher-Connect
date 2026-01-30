@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useAuthContext } from '../contexts/AuthContext';
 import FeedScreen from '../screens/FeedScreen';
@@ -19,12 +20,13 @@ import CreatePostScreen from '../screens/CreatePostScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import ChatScreen from '../screens/ChatScreen';
+import GraphScreen from '../screens/GraphScreen2';
 import PeopleIcon from '../components/icons/PeopleIcon';
 import HomeIcon from '../components/icons/HomeIcon';
 import MessageIcon from '../components/icons/MessageIcon';
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 function MainTabs() {
   return (
@@ -42,6 +44,7 @@ function MainTabs() {
           },
           tabBarShowLabel: false,
           headerShown: false,
+        
         }}
       >
         <Tab.Screen 
@@ -86,6 +89,15 @@ export default function AppNavigator() {
               name="Main" 
               component={MainTabs} 
               options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="Graph" 
+              component={GraphScreen}
+              options={{ 
+                headerShown: true,
+                title: 'Graph',
+                headerBackTitle: 'Back',
+              }}
             />
             <Stack.Screen 
               name="PostDetail" 
