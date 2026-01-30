@@ -8,9 +8,11 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from notification.utils import create_notification
 
 from .forms import SignupForm, ProfileForm
-from .models import User, FriendshipRequest
+from .models import User, FriendshipRequest, Connection
 from .serializers import UserSerializer, FriendshipRequestSerializer
 
+from django.db.models import Q
+import networkx as nx
 
 @api_view(['GET'])
 def me(request):
@@ -86,6 +88,31 @@ def friends(request, pk):
         'requests_sent': requests_sent  # ADD THIS LINE
     }, safe=False)
 
+
+@api_view(['GET'])
+def get_connections(request):
+    # Returns 2 levels of connections
+    user = User.objects.get(pk=request.user.pk)
+
+    G = nx.Graph()
+    direct_connections = Connection.objects.filter(Q(user1=user) | Q(user2=user),
+                                                Q(is_connected=True))
+
+    for direct_connection in direct_connections:
+        friend = direct_connection.user1 if user != direct_connection.user1 else direct_connection.user2
+        G.add_edge(str(user.id), str(friend.id), weight=direct_connection.score)
+
+        secondary_connections = Connection.objects.filter(Q(user1=friend) | Q(user2=friend),
+                                                       Q(is_connected=True))
+        
+        for secondary_connection in secondary_connections:
+            second_friend = secondary_connection.user1 if friend != secondary_connection.user1 else secondary_connection.user2
+            G.add_edge(str(friend.id), str(second_friend.id), weight=secondary_connection.score)
+    
+    return JsonResponse({
+        'graph': nx.node_link_data(G).get('edges', [])
+    })
+        
 
 @api_view(['GET'])
 def my_friendship_suggestions(request):

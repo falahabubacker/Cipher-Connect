@@ -84,3 +84,24 @@ class FriendshipRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, related_name='created_friendshiprequests', on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=SENT)
+
+class Connection(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user1 = models.ForeignKey(User, related_name='connections1', on_delete=models.CASCADE)
+    user2 = models.ForeignKey(User, related_name='connections2', on_delete=models.CASCADE)
+    score = models.IntegerField(default=0)
+    last_interaction = models.DateTimeField(null=True, blank=True)
+    is_connected = models.BooleanField(default=False, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.score > 5:
+            self.is_connected = True
+        else:
+            self.is_connected = False
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.user1.name} - {self.user2.name}"
+    
+    class Meta:
+        unique_together = ('user1', 'user2')
