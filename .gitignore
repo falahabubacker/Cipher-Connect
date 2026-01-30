@@ -3,3 +3,4 @@ wey_backend/*/*.pyc
 wey_backend/*/*/*.pyc
 */**/*.pyc
 wey_backend/.env
+wey_backend/db.sqlite3
