@@ -26,3 +26,6 @@ class ConversationMessage(models.Model):
     
     def created_at_formatted(self):
        return timesince(self.created_at)
+
+    def __str__(self):
+        return f"{self.created_by} -> {self.sent_to}"
