@@ -110,7 +110,7 @@ def get_connections(request):
             G.add_edge(str(friend.id), str(second_friend.id), weight=secondary_connection.score)
     
     graph = nx.node_link_data(G).get('edges', [])
-    print(graph)
+    print(f"Returning graph: {graph}")
     return JsonResponse({
         'graph': graph
     })
