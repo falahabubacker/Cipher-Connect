@@ -104,7 +104,7 @@ class Connection(models.Model):
             
             try:
                 friend_obj = FriendshipRequest.objects.filter(Q(created_by=self.user1, created_for=self.user2) | 
-                                                            Q(created_by=self.user2, created_for=self.user1))
+                                                            Q(created_by=self.user2, created_for=self.user1)).first()
                 if friend_obj is None:
                     friend_obj = FriendshipRequest.objects.create(created_by=self.user1, created_for=self.user2, status='accepted')
                 
