@@ -31,9 +31,9 @@ SECRET_KEY = 'django-insecure-v*=4ctfyl&pe37%c8rs7oa4hoj3h_4w--q9nxw1j=ebd%91865
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['FalahAbubacker.pythonanywhere.com']
+ALLOWED_HOSTS = ['cipher-connect-g9ok.onrender.com']
 
-WEBSITE_URL = 'https://FalahAbubacker.pythonanywhere.com'
+WEBSITE_URL = 'https://cipher-connect-g9ok.onrender.com'
 
 
 # Application definition
@@ -60,7 +60,7 @@ REST_FRAMEWORK = {
 CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://FalahAbubacker.pythonanywhere.com",
+    "https://cipher-connect-g9ok.onrender.com",
 ]
 
 INSTALLED_APPS = [
