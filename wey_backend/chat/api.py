@@ -59,6 +59,8 @@ def conversation_send_message(request, pk):
         sent_to=sent_to
     )
 
+    conversation_message.save()
+
     try:
         # Update connections object
         connection_obj = Connection.objects.filter(Q(user1=request.user, user2=sent_to) | 
