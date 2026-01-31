@@ -86,6 +86,9 @@ class FriendshipRequest(models.Model):
     created_by = models.ForeignKey(User, related_name='created_friendshiprequests', on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=SENT)
 
+    def __str__(self):
+        return f"{self.created_by.name} -> {self.created_for.name}"
+
 class Connection(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user1 = models.ForeignKey(User, related_name='connections1', on_delete=models.CASCADE)
