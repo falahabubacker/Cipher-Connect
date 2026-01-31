@@ -67,6 +67,10 @@ class User(AbstractBaseUser, PermissionsMixin):
             return self.avatar.url
         else:
             return 'https://picsum.photos/200/200'
+    
+    def save(self, *args, **kwargs):
+        self.friends_count = self.friends.count()
+        super().save(*args, **kwargs)
 
 
 class FriendshipRequest(models.Model):
@@ -102,15 +106,11 @@ class Connection(models.Model):
         if self.score > 15:
             self.is_connected = True
             
-            try:
-                friend_obj = FriendshipRequest.objects.filter(Q(created_by=self.user1, created_for=self.user2) | 
-                                                            Q(created_by=self.user2, created_for=self.user1)).first()
-                if friend_obj is None:
-                    friend_obj = FriendshipRequest.objects.create(created_by=self.user1, created_for=self.user2, status='accepted')
-                
-                friend_obj.save()
-            except Exception as e:
-                print(e)
+            self.user1.friends.add(self.user2)
+            self.user2.friends.add(self.user1)
+
+            self.user1.save()
+            self.user2.save()
 
         else:
             self.is_connected = False

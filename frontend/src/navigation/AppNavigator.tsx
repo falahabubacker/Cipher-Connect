@@ -95,7 +95,7 @@ export default function AppNavigator() {
               component={GraphScreen}
               options={{ 
                 headerShown: true,
-                title: 'Graph',
+                title: 'My Network',
                 headerBackTitle: 'Back',
               }}
             />

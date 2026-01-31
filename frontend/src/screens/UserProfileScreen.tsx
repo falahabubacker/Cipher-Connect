@@ -161,7 +161,7 @@ export default function UserProfileScreen({ route, navigation }: UserProfileScre
           {/* Connect Button */}
           {currentUser && user.id !== currentUser.id && (
             <View style={styles.buttonRow}>
-              <TouchableOpacity 
+              {/* <TouchableOpacity 
                 style={[
                   styles.followButton,
                   (isConnected || isPending) && styles.connectedButton
@@ -181,21 +181,19 @@ export default function UserProfileScreen({ route, navigation }: UserProfileScre
                 ]}>
                   {isPending ? 'Pending' : isConnected ? 'Connected' : 'Connect'}
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
               
-              {isConnected && (
-                <TouchableOpacity 
-                  style={styles.messageButton}
-                  onPress={handleMessage}
-                  disabled={getOrCreateConversationMutation.isPending}
-                >
-                  {getOrCreateConversationMutation.isPending ? (
-                    <ActivityIndicator size="small" color="#007AFF" />
-                  ) : (
-                    <Text style={styles.messageButtonText}>Message</Text>
-                  )}
-                </TouchableOpacity>
-              )}
+              <TouchableOpacity 
+                style={styles.messageButton}
+                onPress={handleMessage}
+                disabled={getOrCreateConversationMutation.isPending}
+              >
+                {getOrCreateConversationMutation.isPending ? (
+                  <ActivityIndicator size="small" color="#007AFF" />
+                ) : (
+                  <Text style={styles.messageButtonText}>Message</Text>
+                )}
+              </TouchableOpacity>
             </View>
           )}
         </View>

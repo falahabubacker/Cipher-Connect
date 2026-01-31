@@ -32,6 +32,7 @@ const GraphScreen = () => {
     isLoading: isLoadingConnections, 
     isError: isConnectionsError 
   } = useConnections();
+  console.log(connectionsData)
 
   // 2. Extract unique node IDs from the graph
   const nodeIds = useMemo(() => {
@@ -90,7 +91,7 @@ const GraphScreen = () => {
       shape: 'circularImage',
       image: info.avatar || 'https://picsum.photos/200/200', 
       size: id === me?.id?.toString() ? 40 : 30,
-      stroke: id === me?.id?.toString() ? '#F4C430' : '#4A90E2',
+      border: id === me?.id?.toString() ? '#F4C430' : '#4A90E2',
     }));
 
     const visEdges = graph.map(edge => ({
@@ -151,7 +152,7 @@ const GraphScreen = () => {
                   borderWidth: 2,
                   size: 30,
                   color: { border: '#4A90E2', background: '#ffffff' },
-                  font: { color: '#333333', size: 12, face: 'arial', vadjust: 40 }
+                  font: { color: '#333333', size: 12, face: 'arial', vadjust: 10 }
                 },
                 edges: { 
                   color: '#CCCCCC',

@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSearch } from '../hooks/useSearch';
 import { useSendFriendRequest, useFriends, useRemoveFriend } from '../hooks/useFriends';
 import { useMe } from '../hooks/useAuth';
+import { useGetOrCreateConversation } from '../hooks/useChat';
 
 export default function SearchScreen({ navigation }: any) {
   const [query, setQuery] = useState('');
@@ -23,6 +24,7 @@ export default function SearchScreen({ navigation }: any) {
   const removeFriendMutation = useRemoveFriend();
   const { data: currentUser } = useMe();
   const { data: friendsData } = useFriends(currentUser?.id || '');
+  const getOrCreateConversationMutation = useGetOrCreateConversation();
 
   const handleSearch = () => {
     if (query.trim()) {
@@ -56,6 +58,17 @@ export default function SearchScreen({ navigation }: any) {
         },
       ]
     );
+  };
+
+  const handleMessage = () => {
+    getOrCreateConversationMutation.mutate(currentUser.id, {
+      onSuccess: (conversation) => {
+        navigation.navigate('Chat', {
+          conversationId: conversation.id,
+          otherUser: user,
+        });
+      },
+    });
   };
 
   useEffect(() => {
@@ -135,30 +148,19 @@ export default function SearchScreen({ navigation }: any) {
                     <Text style={styles.userName}>{user.name}</Text>
                     <Text style={styles.userEmail}>{user.email}</Text>
                   </View>
-                  {currentUser && user.id !== currentUser.id && (
-                    <TouchableOpacity
-                      style={[
-                        styles.followButton,
-                        (isFollowingUser || isRequestPending) && styles.followingButton
-                      ]}
-                      onPress={(e) => {
-                        e.stopPropagation();
-                        if (isFollowingUser) {
-                          handleDisconnect(user.id, user.name);
-                        } else if (!isRequestPending) {
-                          handleFollow(user.id);
-                        }
-                      }}
-                      disabled={sendFriendRequestMutation.isPending || removeFriendMutation.isPending || isRequestPending}
+                  {/* {currentUser && user.id !== currentUser.id && (
+                    <TouchableOpacity 
+                      style={styles.messageButton}
+                      onPress={handleMessage}
+                      disabled={getOrCreateConversationMutation.isPending}
                     >
-                      <Text style={[
-                        styles.followButtonText,
-                        (isFollowingUser || isRequestPending) && styles.followingButtonText
-                      ]}>
-                        {isRequestPending ? 'Pending' : isFollowingUser ? 'Connected' : 'Connect'}
-                      </Text>
+                      {getOrCreateConversationMutation.isPending ? (
+                        <ActivityIndicator size="small" color="#007AFF" />
+                      ) : (
+                        <Text style={styles.messageButtonText}>Message</Text>
+                      )}
                     </TouchableOpacity>
-                  )}
+                  )} */}
                 </TouchableOpacity>
                 );
               })}
@@ -215,7 +217,7 @@ export default function SearchScreen({ navigation }: any) {
                 <Text style={styles.userName}>{user.name}</Text>
                 <Text style={styles.userEmail}>{user.email}</Text>
               </View>
-              {currentUser && user.id !== currentUser.id && (
+              {/* {currentUser && user.id !== currentUser.id && (
                 <TouchableOpacity
                   style={[
                     styles.followButton,
@@ -238,7 +240,7 @@ export default function SearchScreen({ navigation }: any) {
                     {isRequestPending ? 'Pending' : isFollowingUser ? 'Connected' : 'Connect'}
                   </Text>
                 </TouchableOpacity>
-              )}
+              )} */}
             </TouchableOpacity>
             );
           })}
@@ -371,6 +373,20 @@ const styles = StyleSheet.create({
   },
   followingButtonText: {
     color: '#657786',
+  },
+  messageButton: {
+    flex: 1,
+    backgroundColor: 'white',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#007AFF',
+  },
+  messageButtonText: {
+    color: '#007AFF',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   postItem: {
     backgroundColor: 'white',

@@ -29,7 +29,7 @@ const getBaseURL = () => {
     
     return 'http://localhost:8000';
   }
-  return 'https://FalahAbubacker.pythonanywhere.com';
+  return 'https://cipher-connect-g9ok.onrender.com';
 };
 
 const API_BASE_URL = getBaseURL();
