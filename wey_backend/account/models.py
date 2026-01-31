@@ -6,7 +6,7 @@ from django.db import models
 from django.db.utils import IntegrityError
 from django.utils import timezone
 
-
+from django.db.models import Q
 
 class CustomUserManager(UserManager):
     def _create_user(self, name=None, email=None, password=None, **extra_fields):
@@ -101,6 +101,17 @@ class Connection(models.Model):
         if self.user1 == self.user2: raise IntegrityError("UNIQUE constraint failed")
         if self.score > 15:
             self.is_connected = True
+            
+            try:
+                friend_obj = FriendshipRequest.objects.filter(Q(created_by=self.user1, created_for=self.user2) | 
+                                                            Q(created_by=self.user2, created_for=self.user1))
+                if friend_obj is None:
+                    friend_obj = FriendshipRequest.objects.create(created_by=self.user1, created_for=self.user2, status='accepted')
+                
+                friend_obj.save()
+            except Exception as e:
+                print(e)
+
         else:
             self.is_connected = False
         super().save(*args, **kwargs)

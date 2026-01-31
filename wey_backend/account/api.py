@@ -109,8 +109,10 @@ def get_connections(request):
             second_friend = secondary_connection.user1 if friend != secondary_connection.user1 else secondary_connection.user2
             G.add_edge(str(friend.id), str(second_friend.id), weight=secondary_connection.score)
     
+    graph = nx.node_link_data(G).get('edges', [])
+    print(graph)
     return JsonResponse({
-        'graph': nx.node_link_data(G).get('edges', [])
+        'graph': graph
     })
         
 
