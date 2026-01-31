@@ -18,6 +18,14 @@ CLOUDFLARE_R2_CONFIG_OPTIONS = {
     "custom_domain": config("CLOUDFLARE_R2_PUBLIC_URL", default=None),
 }
 
+AIVEN_DB_CONFIG = {
+    "db_name": config("DB_NAME"),
+    "db_username": config("DB_USERNAME"),
+    "db_password": config("DB_PASSWORD"),
+    "db_host": config("DB_HOST"),
+    "db_port": config("DB_PORT")
+}
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -135,9 +143,17 @@ WSGI_APPLICATION = 'wey_backend.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # },
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': AIVEN_DB_CONFIG['db_name'],            # The name of your MySQL database
+        'USER': AIVEN_DB_CONFIG['db_username'],        # The MySQL username
+        'PASSWORD': AIVEN_DB_CONFIG['db_password'],    # The MySQL user's password
+        'HOST': AIVEN_DB_CONFIG['db_host'],            # The host IP or 'localhost'
+        'PORT': AIVEN_DB_CONFIG['db_port'],            # The MySQL port (default is 3306)
     }
 }
 
