@@ -20,7 +20,7 @@ import CreatePostScreen from '../screens/CreatePostScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import ChatScreen from '../screens/ChatScreen';
-import GraphScreen from '../screens/GraphScreen2';
+import GraphScreen from '../screens/GraphScreen';
 import PeopleIcon from '../components/icons/PeopleIcon';
 import HomeIcon from '../components/icons/HomeIcon';
 import MessageIcon from '../components/icons/MessageIcon';

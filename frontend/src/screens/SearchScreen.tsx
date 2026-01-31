@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -58,6 +58,18 @@ export default function SearchScreen({ navigation }: any) {
     );
   };
 
+  useEffect(() => {
+  if (query.trim() === '') {
+    searchMutation.reset();
+  }
+  }, [query]);
+
+  useEffect(() => {
+    if (query.trim().length > 4) {
+      searchMutation.mutate(query);
+    }
+  }, [query])
+
   // Get friend IDs from friends data
   const friendIds = new Set(friendsData?.friends?.map((f: any) => f.id) || []);
   // Get pending request IDs from requests data
@@ -92,7 +104,7 @@ export default function SearchScreen({ navigation }: any) {
         </View>
       )}
 
-      {searchMutation.data && (
+      {searchMutation.data? (
         <View style={styles.results}>
           {/* Users */}
           {searchMutation.data.users.length > 0 && (
@@ -173,6 +185,65 @@ export default function SearchScreen({ navigation }: any) {
               <Text style={styles.emptyText}>No results found</Text>
             )}
         </View>
+      ) : (
+        <View style={styles.section}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>My Friends</Text>
+          </View>
+          {friendsData?.friends.map((user) => {
+            const isRequestPending = pendingRequests.has(user.id) || pendingRequestIds.has(user.id);
+            const isFollowingUser = friendIds.has(user.id);
+            return (
+            <TouchableOpacity 
+              key={user.id} 
+              style={styles.userItem}
+              onPress={() => navigation.navigate('UserProfile', { userId: user.id })}
+            >
+              {user.get_avatar ? (
+                <Image
+                  source={{ uri: user.get_avatar }}
+                  style={styles.avatar}
+                />
+              ) : (
+                <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                  <Text style={styles.avatarText}>
+                    {user.name?.charAt(0)?.toUpperCase() || '?'}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.userInfo}>
+                <Text style={styles.userName}>{user.name}</Text>
+                <Text style={styles.userEmail}>{user.email}</Text>
+              </View>
+              {currentUser && user.id !== currentUser.id && (
+                <TouchableOpacity
+                  style={[
+                    styles.followButton,
+                    (isFollowingUser || isRequestPending) && styles.followingButton
+                  ]}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    if (isFollowingUser) {
+                      handleDisconnect(user.id, user.name);
+                    } else if (!isRequestPending) {
+                      handleFollow(user.id);
+                    }
+                  }}
+                  disabled={sendFriendRequestMutation.isPending || removeFriendMutation.isPending || isRequestPending}
+                >
+                  <Text style={[
+                    styles.followButtonText,
+                    (isFollowingUser || isRequestPending) && styles.followingButtonText
+                  ]}>
+                    {isRequestPending ? 'Pending' : isFollowingUser ? 'Connected' : 'Connect'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </TouchableOpacity>
+            );
+          })}
+        </View>
+
       )}
 
       {!searchMutation.data && !searchMutation.isPending && (

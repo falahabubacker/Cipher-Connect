@@ -1,180 +1,220 @@
-
-import React, { useEffect, useState } from 'react';
-import { View, Dimensions, StyleSheet } from 'react-native';
-import Svg, { Line, Circle, Text as SvgText, Image as SvgImage, Defs, ClipPath, Ellipse } from 'react-native-svg';
-import SvgPanZoom from 'react-native-svg-pan-zoom';
-import { forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide } from 'd3-force';
-import { useConnections } from '../hooks/useConnections';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { StyleSheet, View, ActivityIndicator, Text } from 'react-native';
+import { WebView, WebViewMessageEvent } from 'react-native-webview';
+import { useQuery, useQueries } from '@tanstack/react-query';
 import { useMe } from '../hooks/useAuth';
-import { useFriends } from '../hooks/useFriends';
 import { friendsApi } from '../api/endpoints';
+import { useConnections } from '../hooks/useConnections';
 
+interface UserInfo {
+  name: string;
+  email: string;
+  avatar: string;
+}
 
-export default function GraphScreen() {
-  const { width, height } = Dimensions.get('window');
-  const { data, isLoading, error } = useConnections();
+interface EdgeData {
+  source: string;
+  target: string;
+}
+
+interface GraphScreenProps {
+  me: any;
+}
+
+const GraphScreen = () => {
+  const webViewRef = useRef<WebView>(null);
+  const [isWebViewReady, setIsWebViewReady] = useState(false);
   const { data: me } = useMe();
-  const [nodes, setNodes] = useState<any[]>([]);
-  const [links, setLinks] = useState<any[]>([]);
-  const [userInfoMap, setUserInfoMap] = useState<Record<string, { name: string; email: string; avatar: string }>>({});
 
-  // Node sizes
-  const baseNodeSizeCenter = 54;
-  const baseNodeSizeOther = 22;
+  // 1. Fetch the graph structure using your hook
+  const { 
+    data: connectionsData, 
+    isLoading: isLoadingConnections, 
+    isError: isConnectionsError 
+  } = useConnections();
 
-  useEffect(() => {
-    if (!data || !me) return;
-    const graph = data.graph || [];
-    const nodeIds = Array.from(new Set(graph.flatMap(edge => [edge.source, edge.target])));
-    if (nodeIds.length === 0) return;
+  // 2. Extract unique node IDs from the graph
+  const nodeIds = useMemo(() => {
+    if (!connectionsData?.graph) return [];
+    const ids = connectionsData.graph.flatMap(edge => [edge.source, edge.target]);
+    return Array.from(new Set(ids));
+  }, [connectionsData]);
 
-    // Fetch user info for each node using useFriends
-    const fetchAllUserInfo = async () => {
-      const userMap: Record<string, { name: string; email: string; avatar: string }> = {};
-      for (const id of nodeIds) {
-        try {
-          const res = await friendsApi.list(id);
-          if (res.data && res.data.user) {
-            userMap[id] = {
-              name: res.data.user.name,
-              email: res.data.user.email,
-              avatar: res.data.user.get_avatar,
-            };
-          }
-        } catch (e) {
-          userMap[id] = { name: 'Unknown', email: 'Unknown', avatar: '' };
-        }
+  // 3. Fetch all user details in parallel using React Query's useQueries
+  // This automatically uses the caching logic from your useFriends implementation
+  const userQueries = useQueries({
+    queries: nodeIds.map((id) => ({
+      queryKey: ['friends', id],
+      queryFn: async () => {
+        const { data } = await friendsApi.list(id);
+        return data;
+      },
+      enabled: !!id,
+      staleTime: 1000 * 60 * 5, // 5 minutes cache
+    })),
+  });
+
+  const isLoadingUsers = userQueries.some((query) => query.isLoading);
+  const isAnyUserError = userQueries.some((query) => query.isError);
+
+  // 4. Map the results into the userInfoMap format
+  const userInfoMap = useMemo(() => {
+    const map: Record<string, UserInfo> = {};
+    nodeIds.forEach((id, index) => {
+      const queryResult = userQueries[index]?.data;
+      if (queryResult?.user) {
+        map[id] = {
+          name: queryResult.user.name,
+          email: queryResult.user.email,
+          avatar: queryResult.user.get_avatar,
+        };
+      } else {
+        map[id] = { name: 'Loading...', email: '', avatar: '' };
       }
-      setUserInfoMap(userMap);
-      // Print out for validation
-      Object.entries(userMap).forEach(([id, info]) => {
-        console.log(`User ${id}: Name=${info.name}, Email=${info.email}, Avatar=${info.avatar}`);
-      });
-    };
-    fetchAllUserInfo();
+    });
+    return map;
+  }, [nodeIds, userQueries]);
 
-    // Use d3-force to compute a layout for nodes and links.
-    const simNodes: any[] = nodeIds.map(id => ({ 
-      id, 
-      radius: id === me.id ? baseNodeSizeCenter + 15 : baseNodeSizeOther + 15 
+  // 5. Update WebView when data and bridge are ready
+  useEffect(() => {
+    const hasData = Object.keys(userInfoMap).length > 0 && connectionsData?.graph;
+    if (isWebViewReady && hasData && !isLoadingUsers) {
+      updateWebViewGraph(connectionsData!.graph, userInfoMap);
+    }
+  }, [isWebViewReady, userInfoMap, connectionsData, isLoadingUsers]);
+
+  const updateWebViewGraph = (graph: EdgeData[], userMap: Record<string, UserInfo>) => {
+    const visNodes = Object.entries(userMap).map(([id, info]) => ({
+      id: id,
+      label: info.name,
+      shape: 'circularImage',
+      image: info.avatar || 'https://picsum.photos/200/200', 
+      size: id === me?.id?.toString() ? 40 : 30,
+      stroke: id === me?.id?.toString() ? '#F4C430' : '#4A90E2',
     }));
-    const simLinks = graph.map((e: any) => ({ source: e.source, target: e.target, distance: 150 }));
 
-    const simulation = forceSimulation(simNodes)
-      .force('charge', forceManyBody().strength(-600))
-      .force('link', forceLink(simLinks).id((d: any) => d.id).distance((d: any) => d.distance || 150).strength(0.5))
-      .force('collide', forceCollide().radius((d: any) => d.radius).iterations(5))
-      .force('center', forceCenter(width / 2, height / 2));
+    const visEdges = graph.map(edge => ({
+      from: edge.source,
+      to: edge.target
+    }));
 
-    // Run simulation synchronously for a number of ticks to produce stable layout
-    simulation.stop();
-    const ticks = Math.min(1000, Math.max(300, nodeIds.length * 20));
-    for (let i = 0; i < ticks; i++) simulation.tick();
+    const script = `
+      if (window.loadGraphData) {
+        window.loadGraphData(${JSON.stringify(visNodes)}, ${JSON.stringify(visEdges)});
+      }
+      true;
+    `;
+    webViewRef.current?.injectJavaScript(script);
+  };
 
-    const nodesArr = simNodes.map(n => ({ id: n.id, x: n.x ?? width / 2, y: n.y ?? height / 2 }));
-    setNodes(nodesArr);
-    setLinks(graph);
+  const onMessage = (event: WebViewMessageEvent) => {
+    try {
+      const msg = JSON.parse(event.nativeEvent.data);
+      if (msg.type === 'READY') {
+        setIsWebViewReady(true);
+      }
+    } catch (e) {
+      console.error("Message error:", e);
+    }
+  };
 
-    // clean up simulation
-    simulation.stop();
-  }, [data, me]);
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+        <style>
+          body, html, #mynetwork { 
+            margin: 0; padding: 0; height: 100vh; width: 100vw; 
+            background: #ffffff; overflow: hidden;
+          }
+        </style>
+      </head>
+      <body>
+        <div id="mynetwork"></div>
+        <script>
+          let network = null;
+          let nodes = new vis.DataSet([]);
+          let edges = new vis.DataSet([]);
+
+          window.loadGraphData = (newNodes, newEdges) => {
+            nodes.clear();
+            edges.clear();
+            nodes.add(newNodes);
+            edges.add(newEdges);
+
+            if (!network) {
+              const container = document.getElementById("mynetwork");
+              const options = {
+                nodes: {
+                  borderWidth: 2,
+                  size: 30,
+                  color: { border: '#4A90E2', background: '#ffffff' },
+                  font: { color: '#333333', size: 12, face: 'arial', vadjust: 40 }
+                },
+                edges: { 
+                  color: '#CCCCCC',
+                  arrows: { to: { enabled: false, scaleFactor: 0.5 } }
+                },
+                physics: { 
+                  enabled: true,
+                  stabilization: { iterations: 100 },
+                  barnesHut: { gravitationalConstant: -3000 }
+                }
+              };
+              network = new vis.Network(container, { nodes, edges }, options);
+              network.on("click", (p) => window.ReactNativeWebView.postMessage(JSON.stringify({type:'CLICK', p})));
+            }
+          };
+          window.onload = () => window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'READY' }));
+        </script>
+      </body>
+    </html>
+  `;
+
+  if (isConnectionsError) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errorText}>Error loading connections.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <SvgPanZoom
-        canvasWidth={width}
-        canvasHeight={height}
-        minScale={0.5}
-        maxScale={3}
-        initialZoom={1}
-        style={{ flex: 1 }}
-      >
-        <Svg width={width} height={height}>
-          {/* Draw edges */}
-          {links.map((link, i) => {
-            const source = nodes.find(n => n.id === link.source);
-            const target = nodes.find(n => n.id === link.target);
-            if (!source || !target) return null;
-            return (
-              <Line
-                key={i}
-                x1={source.x}
-                y1={source.y}
-                x2={target.x}
-                y2={target.y}
-                stroke="#c0bebe"
-                strokeWidth={2}
-              />
-            );
-          })}
-          {/* Draw nodes */}
-          <Defs>
-            {nodes.map((node) => {
-              const isCenter = node.id === me.id;
-              const baseNodeSize = isCenter ? baseNodeSizeCenter : baseNodeSizeOther;
-              return (
-                <ClipPath id={`clip-${node.id}`} key={`clip-${node.id}`}>
-                  <Ellipse cx={node.x} cy={node.y} rx={baseNodeSize} ry={baseNodeSize} />
-                </ClipPath>
-              );
-            })}
-          </Defs>
-          {nodes.map((node) => {
-            const userInfo = userInfoMap[node.id];
-            const isCenter = node.id === me.id;
-            const baseNodeSize = isCenter ? baseNodeSizeCenter : baseNodeSizeOther;
-            const borderR = baseNodeSize + 3;
-            return (
-              <React.Fragment key={node.id}>
-                {/* Draw border first */}
-                <Circle
-                  cx={node.x}
-                  cy={node.y}
-                  r={borderR}
-                  fill={isCenter ? "#F4C430" : "#4F8EF7"}
-                  stroke={isCenter ? "#F4C430" : "#4F8EF7"}
-                  strokeWidth={3}
-                />
-                {/* Draw avatar image on top, clipped to baseNodeSize */}
-                {userInfo?.avatar ? (
-                  <SvgImage
-                    x={node.x - baseNodeSize}
-                    y={node.y - baseNodeSize}
-                    width={baseNodeSize * 2}
-                    height={baseNodeSize * 2}
-                    href={{ uri: userInfo.avatar }}
-                    clipPath={`url(#clip-${node.id})`}
-                    preserveAspectRatio="xMidYMid slice"
-                  />
-                ) : null}
-                {/* Draw label */}
-                <SvgText
-                  x={node.x}
-                  y={node.y + borderR + 20}
-                  fontSize="16"
-                  fill="#000000"
-                  textAnchor="middle"
-                >
-                  {userInfo?.name || ''}
-                </SvgText>
-              </React.Fragment>
-            );
-          })}
-        </Svg>
-      </SvgPanZoom>
+      {(isLoadingConnections || isLoadingUsers) && (
+        <View style={styles.loader}>
+          <ActivityIndicator size="large" color="#4A90E2" />
+        </View>
+      )}
+      <WebView
+        ref={webViewRef}
+        source={{ html: htmlContent }}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+        onMessage={onMessage}
+        style={styles.webview}
+        onLoadEnd={() => {
+           webViewRef.current?.injectJavaScript('window.ReactNativeWebView.postMessage(JSON.stringify({ type: "READY" })); true;');
+        }}
+      />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    alignItems: 'center',
+  container: { flex: 1, backgroundColor: '#fff' },
+  webview: { flex: 1 },
+  loader: {
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    zIndex: 10,
   },
-  text: {
-    fontSize: 20,
-    color: '#333',
-  },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  errorText: { color: 'red' }
 });
+
+export default GraphScreen;

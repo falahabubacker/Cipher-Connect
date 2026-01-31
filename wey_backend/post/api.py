@@ -1,10 +1,11 @@
+from datetime import datetime
 from django.db.models import Q
 from django.http import JsonResponse
 
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from urllib3 import request
 
-from account.models import User, FriendshipRequest
+from account.models import Connection, User, FriendshipRequest
 from account.serializers import UserSerializer
 from notification.utils import create_notification
 
@@ -133,6 +134,7 @@ def get_presigned_url(request):
 
 @api_view(['POST'])
 def post_like(request, pk):
+    # user = User.objects.get(id=request.user.id)
     post = Post.objects.get(pk=pk)
 
     if not post.likes.filter(created_by=request.user):
@@ -142,6 +144,22 @@ def post_like(request, pk):
         post.likes_count = post.likes_count + 1
         post.likes.add(like)
         post.save()
+
+        try:
+            # Update connections object
+            connection_obj = Connection.objects.filter(Q(user1=request.user, user2=post.created_by) | 
+                                                    Q(user1=post.created_by, user2=request.user)).first()
+            
+            if connection_obj is None:
+                connection_obj = Connection.objects.create(user1=request.user, user2=post.created_by,
+                                                        score=0.5, last_interaction=datetime.now())
+
+            connection_obj.score += 0.5
+            connection_obj.last_interaction = datetime.now()
+
+            connection_obj.save()
+        except Exception as e:
+            print(e)
 
         notification = create_notification(request, 'post_like', post_id=post.id)
 
@@ -158,6 +176,23 @@ def post_create_comment(request, pk):
     post.comments.add(comment)
     post.comments_count = post.comments_count + 1
     post.save()
+
+    try:
+        # Update connections object
+        connection_obj = Connection.objects.filter(Q(user1=request.user, user2=post.created_by) | 
+                                            Q(user1=post.created_by, user2=request.user)).first()
+    
+        if connection_obj is None:
+            connection_obj = Connection.objects.create(user1=request.user, user2=post.created_by,
+                                                       score=1, last_interaction=datetime.now())
+
+        connection_obj.score += 1
+        connection_obj.last_interaction = datetime.now()
+
+        connection_obj.save()
+
+    except Exception as e:
+        print(e)
 
     notification = create_notification(request, 'post_comment', post_id=post.id)
 

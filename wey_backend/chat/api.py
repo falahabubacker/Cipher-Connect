@@ -1,8 +1,10 @@
 from django.http import JsonResponse
 
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from django.db.models import Q
+from datetime import datetime
 
-from account.models import User
+from account.models import User, Connection
 
 from .models import Conversation, ConversationMessage
 from .serializers import ConversationSerializer, ConversationDetailSerializer, ConversationMessageSerializer
@@ -56,6 +58,22 @@ def conversation_send_message(request, pk):
         created_by=request.user,
         sent_to=sent_to
     )
+
+    try:
+        # Update connections object
+        connection_obj = Connection.objects.filter(Q(user1=request.user, user2=sent_to) | 
+                                                Q(user1=sent_to, user2=request.user)).first()
+        
+        if connection_obj is None:
+            connection_obj = Connection.objects.create(user1=request.user, user2=sent_to,
+                                    score=2, last_interaction=datetime.now())
+
+        connection_obj.score += 2
+        connection_obj.last_interaction = datetime.now()
+
+        connection_obj.save()
+    except Exception as e:
+        print(e)
 
     serializer = ConversationMessageSerializer(conversation_message)
 

@@ -3,7 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
-const dev = true;
+const dev = false;
 
 // Update this to your backend URL
 const getBaseURL = () => {

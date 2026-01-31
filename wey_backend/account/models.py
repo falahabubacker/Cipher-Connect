@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
 from django.db import models
+from django.db.utils import IntegrityError
 from django.utils import timezone
 
 
@@ -89,12 +90,13 @@ class Connection(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user1 = models.ForeignKey(User, related_name='connections1', on_delete=models.CASCADE)
     user2 = models.ForeignKey(User, related_name='connections2', on_delete=models.CASCADE)
-    score = models.IntegerField(default=0)
+    score = models.FloatField(default=0)
     last_interaction = models.DateTimeField(null=True, blank=True)
     is_connected = models.BooleanField(default=False, blank=True)
 
     def save(self, *args, **kwargs):
-        if self.score > 5:
+        if self.user1 == self.user2: raise IntegrityError("UNIQUE constraint failed")
+        if self.score > 15:
             self.is_connected = True
         else:
             self.is_connected = False
